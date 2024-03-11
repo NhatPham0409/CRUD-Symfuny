@@ -10,11 +10,11 @@ use Doctrine\ORM\Mapping as ORM;
 class Student
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 200)]
+    #[ORM\Column(length: 100)]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 100)]
@@ -23,16 +23,16 @@ class Student
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dob = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $sex = null;
+
     #[ORM\Column(length: 15)]
     private ?string $phone = null;
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
 
-    #[ORM\Column(length: 100)]
-    private ?string $sex = null;
-
-    #[ORM\Column(length: 200)]
+    #[ORM\Column(length: 255)]
     private ?string $address = null;
 
     public function getId(): ?int
@@ -76,6 +76,18 @@ class Student
         return $this;
     }
 
+    public function getSex(): ?string
+    {
+        return $this->sex;
+    }
+
+    public function setSex(string $sex): static
+    {
+        $this->sex = $sex;
+
+        return $this;
+    }
+
     public function getPhone(): ?string
     {
         return $this->phone;
@@ -96,18 +108,6 @@ class Student
     public function setEmail(string $email): static
     {
         $this->email = $email;
-
-        return $this;
-    }
-
-    public function getSex(): ?string
-    {
-        return $this->sex;
-    }
-
-    public function setSex(string $sex): static
-    {
-        $this->sex = $sex;
 
         return $this;
     }

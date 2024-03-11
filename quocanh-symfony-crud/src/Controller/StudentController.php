@@ -1,5 +1,4 @@
-﻿<?php
-
+<?php
 namespace App\Controller;
 
 use DateTime;
@@ -21,16 +20,10 @@ class StudentController extends AbstractController
     #[Route('/student', name: 'student_create', methods:['POST'])]
     public function create(ManagerRegistry $doctrine, Request $raw) : JsonResponse
     {
-        #Sửa chỗ nàyyyyyyyy
-        #Sửa chỗ nàyyyyyyyy
-        #Sửa chỗ nàyyyyyyyy
-        #Sửa chỗ nàyyyyyyyy
-        #Sửa chỗ nàyyyyyyyy
-        $request = json_decode($raw->getContent(), true)['first_name'];
-        echo $request;
+        $request = json_decode($raw->getContent(), true);
 
-        if (!$request->get('first_name') || !$request->get('last_name') || !$request->get('dob') ||
-            !$request->get('phone') || !$request->get('email') || !$request->get("address") || !$request->get("sex"))
+        if (!$request['first_name'] || !$request['last_name'] || !$request['dob'] ||
+            !$request['phone'] || !$request['email'] || !$request['address'] || !$request['sex'])
         {
             return new JsonResponse(['error' => 'All fields are required'], Response::HTTP_BAD_REQUEST);
         }
@@ -38,13 +31,13 @@ class StudentController extends AbstractController
         $entityManager = $doctrine->getManager();
 
         $student = new Student();
-        $student->setFirstName($request->request->get('first_name'));
-        $student->setLastName($request->request->get('last_name'));
-        $student->setDob(new DateTime($request->request->get('dob')));
-        $student->setSex($request->request->get('sex'));
-        $student->setAddress($request->request->get('address'));
-        $student->setPhone($request->request->get('phone'));
-        $student->setEmail($request->request->get('email'));
+        $student->setFirstName($request['first_name']);
+        $student->setLastName($request['last_name']);
+        $student->setDob(new DateTime($request['dob']));
+        $student->setSex($request['sex']);
+        $student->setAddress($request['address']);
+        $student->setPhone($request['phone']);
+        $student->setEmail($request['email']);
 
         $entityManager->persist($student);
         $entityManager->flush();
@@ -116,7 +109,7 @@ class StudentController extends AbstractController
      * @throws Exception
      */
     #[Route('/student/{id}', name: 'student_update', methods:['PUT', 'PATCH'])]
-    public function update(ManagerRegistry $doctrine, Request $request, int $id) : JsonResponse
+    public function update(ManagerRegistry $doctrine, Request $raw, int $id) : JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);
@@ -125,20 +118,21 @@ class StudentController extends AbstractController
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        if (!$request->get('first_name') || !$request->get('last_name') || !$request->get('dob') ||
-            !$request->get('phone') || !$request->get('email') || !$request->get('sex') || !$request->get('address'))
-        {
+        $request = json_decode($raw->getContent(), true);
 
+        if (!$request['first_name'] || !$request['last_name'] || !$request['dob'] ||
+            !$request['phone'] || !$request['email'] || !$request['address'] || !$request['sex'])
+        {
             return new JsonResponse(['error' => 'All fields are required'], Response::HTTP_BAD_REQUEST);
         }
 
-        $student->setFirstName($request->request->get('first_name'));
-        $student->setLastName($request->request->get('last_name'));
-        $student->setSex($request->request->get('sex'));
-        $student->setDob(new DateTime($request->request->get('dob')));
-        $student->setPhone($request->request->get('phone'));
-        $student->setEmail($request->request->get('email'));
-        $student->setAddress($request->request->get('address'));
+        $student->setFirstName($request['first_name']);
+        $student->setLastName($request['last_name']);
+        $student->setDob(new DateTime($request['dob']));
+        $student->setSex($request['sex']);
+        $student->setAddress($request['address']);
+        $student->setPhone($request['phone']);
+        $student->setEmail($request['email']);
 
         $entityManager->flush();
 
