@@ -10,4 +10,3 @@
 ###< symfony/framework-bundle ###
 
 composer_token.txt
-/migrations/Version*.php
