@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Student
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column]
     private ?int $id = null;
 
@@ -28,6 +28,12 @@ class Student
 
     #[ORM\Column(length: 100)]
     private ?string $email = null;
+
+    #[ORM\Column(length: 100)]
+    private ?string $sex = null;
+
+    #[ORM\Column(length: 200)]
+    private ?string $address = null;
 
     public function getId(): ?int
     {
@@ -90,6 +96,30 @@ class Student
     public function setEmail(string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getSex(): ?string
+    {
+        return $this->sex;
+    }
+
+    public function setSex(string $sex): static
+    {
+        $this->sex = $sex;
+
+        return $this;
+    }
+
+    public function getAddress(): ?string
+    {
+        return $this->address;
+    }
+
+    public function setAddress(string $address): static
+    {
+        $this->address = $address;
 
         return $this;
     }
