@@ -9,9 +9,9 @@ use Symfony\Component\HttpFoundation\Request;
 
 interface IStudentService
 {
-    public static function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse;
-    public static function getAllStudents(ManagerRegistry $doctrine): JsonResponse;
+    public function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse;
+    public function getAllStudents(ManagerRegistry $doctrine): JsonResponse;
     public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse;
-    public static function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw): JsonResponse;
-    public static function delete(ManagerRegistry $doctrine, int $id): JsonResponse;
+    public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw): JsonResponse;
+    public function delete(ManagerRegistry $doctrine, int $id): JsonResponse;
 }

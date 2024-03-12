@@ -16,13 +16,17 @@ class StudentServiceImpl implements IStudentService
     /**
      * @throws Exception
      */
-    public static function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse
+    public function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse
     {
         $request = json_decode($raw->getContent(), true);
 
+        if (empty($request)) {
+            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+        }
+
         if (!$request['first_name'] || !$request['last_name'] || !$request['dob'] ||
-            !$request['phone'] || !$request['email'] || !$request['address'] || !$request['sex']) {
-            return new JsonResponse(['error' => 'All fields are required'], Response::HTTP_BAD_REQUEST);
+            !$request['phone'] || !$request['email'] || !$request['address'] || !$request['gender']) {
+            return new JsonResponse(['error' => 'Missing required fields for a student'], Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $doctrine->getManager();
@@ -31,7 +35,7 @@ class StudentServiceImpl implements IStudentService
         $student->setFirstName($request['first_name']);
         $student->setLastName($request['last_name']);
         $student->setDob(new DateTime($request['dob']));
-        $student->setSex($request['sex']);
+        $student->setGender($request['gender']);
         $student->setAddress($request['address']);
         $student->setPhone($request['phone']);
         $student->setEmail($request['email']);
@@ -44,7 +48,7 @@ class StudentServiceImpl implements IStudentService
             'first_name' => $student->getFirstName(),
             'last_name' => $student->getLastName(),
             'dob' => $student->getDob()->format('d-m-Y'),
-            'sex' => $student->getSex(),
+            'gender' => $student->getGender(),
             'phone' => $student->getPhone(),
             'email' => $student->getEmail(),
             'address' => $student->getAddress(),
@@ -53,7 +57,7 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse($data, Response::HTTP_CREATED);
     }
 
-    public static function getAllStudents(ManagerRegistry $doctrine): JsonResponse
+    public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
     {
         $students = $doctrine
             ->getRepository(Student::class)
@@ -71,7 +75,7 @@ class StudentServiceImpl implements IStudentService
                 'first_name' => $student->getFirstName(),
                 'last_name' => $student->getLastName(),
                 'dob' => $student->getDob()->format('d-m-Y'),
-                'sex' => $student->getSex(),
+                'gender' => $student->getGender(),
                 'address' => $student->getAddress(),
                 'phone' => $student->getPhone(),
                 'email' => $student->getEmail(),
@@ -94,7 +98,7 @@ class StudentServiceImpl implements IStudentService
             'first_name' => $student->getFirstName(),
             'last_name' => $student->getLastName(),
             'dob' => $student->getDob()->format('d-m-Y'),
-            'sex' => $student->getSex(),
+            'gender' => $student->getGender(),
             'address' => $student->getAddress(),
             'phone' => $student->getPhone(),
             'email' => $student->getEmail(),
@@ -106,8 +110,14 @@ class StudentServiceImpl implements IStudentService
     /**
      * @throws Exception
      */
-    public static function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw): JsonResponse
+    public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw): JsonResponse
     {
+        $request = json_decode($raw->getContent(), true);
+
+        if (empty($request)) {
+            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+        }
+
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);
 
@@ -115,13 +125,17 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        $request = json_decode($raw->getContent(), true);
-
-        foreach (['first_name', 'last_name', 'dob', 'sex', 'address', 'phone', 'email'] as $property) {
+        foreach (['first_name', 'last_name', 'dob', 'gender', 'address', 'phone', 'email'] as $property) {
             if (isset($request[$property])) {
                 switch ($property) {
                     case 'dob':
                         $student->setDob(new DateTime($request['dob']));
+                        break;
+                    case 'first_name':
+                        $student->setFirstName($request['first_name']);
+                        break;
+                    case 'last_name':
+                        $student->setLastName($request['last_name']);
                         break;
                     default:
                         $methodName = 'set' . ucfirst($property);
@@ -138,7 +152,7 @@ class StudentServiceImpl implements IStudentService
             'first_name' => $student->getFirstName(),
             'last_name' => $student->getLastName(),
             'dob' => $student->getDob()->format('d-m-Y'),
-            'sex' => $student->getSex(),
+            'gender' => $student->getGender(),
             'address' => $student->getAddress(),
             'phone' => $student->getPhone(),
             'email' => $student->getEmail(),
@@ -147,7 +161,7 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    public static function delete(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);

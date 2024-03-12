@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\StudentRepository;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -21,10 +22,10 @@ class Student
     private ?string $last_name = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $dob = null;
+    private ?DateTimeInterface $dob = null;
 
     #[ORM\Column(length: 50)]
-    private ?string $sex = null;
+    private ?string $gender = null;
 
     #[ORM\Column(length: 15)]
     private ?string $phone = null;
@@ -64,26 +65,26 @@ class Student
         return $this;
     }
 
-    public function getDob(): ?\DateTimeInterface
+    public function getDob(): ?DateTimeInterface
     {
         return $this->dob;
     }
 
-    public function setDob(\DateTimeInterface $dob): static
+    public function setDob(DateTimeInterface $dob): static
     {
         $this->dob = $dob;
 
         return $this;
     }
 
-    public function getSex(): ?string
+    public function getGender(): ?string
     {
-        return $this->sex;
+        return $this->gender;
     }
 
-    public function setSex(string $sex): static
+    public function setGender(string $gender): static
     {
-        $this->sex = $sex;
+        $this->gender = $gender;
 
         return $this;
     }
