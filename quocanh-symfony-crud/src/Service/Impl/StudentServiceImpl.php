@@ -18,6 +18,7 @@ class StudentServiceImpl implements IStudentService
      */
     public function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse
     {
+        //lấy dữ liệu từ request body và chuyển đổi thành mảng
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
@@ -29,6 +30,7 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'Missing required fields for a student'], Response::HTTP_BAD_REQUEST);
         }
 
+        //ấy entity manager để thao tác với DB
         $entityManager = $doctrine->getManager();
 
         $student = new Student();
@@ -40,6 +42,7 @@ class StudentServiceImpl implements IStudentService
         $student->setPhone($request['phone']);
         $student->setEmail($request['email']);
 
+        //lưu trữ dữ liệu vào DB
         $entityManager->persist($student);
         $entityManager->flush();
 
@@ -59,17 +62,19 @@ class StudentServiceImpl implements IStudentService
 
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
     {
-        $students = $doctrine
+        //lấy tất cả sinh viên từ DB (tham chiếu đến entity Student và gọi phương thức findAll())
+        $studentList = $doctrine
             ->getRepository(Student::class)
             ->findAll();
 
-        if (!$students) {
+        if (!$studentList) {
             return new JsonResponse(['error' => 'No students found'], Response::HTTP_NOT_FOUND);
         }
 
         $data = [];
 
-        foreach ($students as $student) {
+        //duyệt danh sách sinh viên và chuyển đổi thành mảng
+        foreach ($studentList as $student) {
             $data[] = [
                 'id' => $student->getId(),
                 'first_name' => $student->getFirstName(),
@@ -87,6 +92,7 @@ class StudentServiceImpl implements IStudentService
 
     public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
+        //lấy sinh viên theo id (tham chiếu đến entity Student và gọi phương thức find())
         $student = $doctrine->getRepository(Student::class)->find($id);
 
         if (!$student) {
@@ -145,6 +151,7 @@ class StudentServiceImpl implements IStudentService
             }
         }
 
+        $entityManager->persist($student);
         $entityManager->flush();
 
         $data = [

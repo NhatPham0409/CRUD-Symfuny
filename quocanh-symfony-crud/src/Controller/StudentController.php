@@ -2,10 +2,8 @@
 
 namespace App\Controller;
 
-use App\Service\Impl\StudentServiceImpl;
 use App\Service\IStudentService;
 use Doctrine\Persistence\ManagerRegistry;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
