@@ -18,6 +18,8 @@ class StudentServiceImpl implements IStudentService
      */
     public function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse
     {
+
+        //Get the request data and convert to an array
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
@@ -29,6 +31,7 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'Missing required fields for a student'], Response::HTTP_BAD_REQUEST);
         }
 
+        //Get EntityManager to interact with DB
         $entityManager = $doctrine->getManager();
 
         $student = new Student();
@@ -40,6 +43,7 @@ class StudentServiceImpl implements IStudentService
         $student->setPhone($request['phone']);
         $student->setEmail($request['email']);
 
+        //Store the student object in DB
         $entityManager->persist($student);
         $entityManager->flush();
 
@@ -59,17 +63,19 @@ class StudentServiceImpl implements IStudentService
 
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
     {
-        $students = $doctrine
+        //Get all students from the DB (get a reference to the StudentReposìtory and call the findAll() method)
+        $studentList = $doctrine
             ->getRepository(Student::class)
             ->findAll();
 
-        if (!$students) {
+        if (!$studentList) {
             return new JsonResponse(['error' => 'No students found'], Response::HTTP_NOT_FOUND);
         }
 
         $data = [];
 
-        foreach ($students as $student) {
+        //Loop through the list of students and store the data in an array
+        foreach ($studentList as $student) {
             $data[] = [
                 'id' => $student->getId(),
                 'first_name' => $student->getFirstName(),
@@ -87,6 +93,7 @@ class StudentServiceImpl implements IStudentService
 
     public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
+        //Get one student from the DB by ID (get a reference to the StudentReposìtory and call the find($id) method)
         $student = $doctrine->getRepository(Student::class)->find($id);
 
         if (!$student) {
@@ -125,6 +132,7 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
+        //Loop through the properties list and update the student object
         foreach (['first_name', 'last_name', 'dob', 'gender', 'address', 'phone', 'email'] as $property) {
             if (isset($request[$property])) {
                 switch ($property) {

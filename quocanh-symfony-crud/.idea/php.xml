@@ -83,9 +83,6 @@
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
   </component>
-  <component name="PhpTerminalSettingsCustomizer">
-    <option name="myIsInterpreterAdded" value="false" />
-  </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />
   </component>
