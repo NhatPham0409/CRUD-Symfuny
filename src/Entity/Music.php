@@ -13,17 +13,14 @@ class Music
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: false)]
     private ?string $songName = null;
 
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100, nullable: false)]
     private ?string $author = null;
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $album = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $kbps = null;
 
     public function getId(): ?int
     {
@@ -66,15 +63,4 @@ class Music
         return $this;
     }
 
-    public function getKbps(): ?int
-    {
-        return $this->kbps;
-    }
-
-    public function setKbps(?int $kbps): static
-    {
-        $this->kbps = $kbps;
-
-        return $this;
-    }
 }

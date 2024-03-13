@@ -18,12 +18,12 @@ class MusicController extends AbstractController
         $musics = $doctrine->getRepository(Music::class)->findAll();
         $data = [];
         foreach ($musics as $music) {
+
             $data[] = [
                 'id' => $music->getId(),
                 'songName' => $music->getSongName(),
                 'author' => $music->getAuthor(),
-                'album'=> $music->getAlbum(),
-                'kbps'=> $music->getKbps(),
+                'album' => $music->getAlbum(),
             ];
         }
         return $this->json($data);
@@ -42,8 +42,7 @@ class MusicController extends AbstractController
             'id' => $music->getId(),
             'songName' => $music->getSongName(),
             'author' => $music->getAuthor(),
-            'album'=> $music->getAlbum(),
-            'kbps'=> $music->getKbps(),
+            'album' => $music->getAlbum(),
         ];
         return $this->json($data);
     }
@@ -54,10 +53,20 @@ class MusicController extends AbstractController
         $entityManager = $doctrine->getManager();
 
         $music = new Music();
+
+        $songName = $request->request->get('songName');
+        $author = $request->request->get('author');
+
+        if (empty($songName) && empty($author))
+            return $this->json('SongName and Author are required', 400);
+        if (empty($songName))
+            return $this->json('SongName are required', 400);
+        if (empty($author))
+            return $this->json('Author are required', 400);
+
         $music->setSongName($request->request->get('songName'));
         $music->setAuthor($request->request->get('author'));
         $music->setAlbum($request->request->get('album'));
-        $music->setKbps($request->request->get('kbps'));
 
         $entityManager->persist($music);
         $entityManager->flush();
@@ -66,8 +75,7 @@ class MusicController extends AbstractController
             'id' => $music->getId(),
             'songName' => $music->getSongName(),
             'author' => $music->getAuthor(),
-            'album'=> $music->getAlbum(),
-            'kbps'=> $music->getKbps(),
+            'album' => $music->getAlbum(),
         ];
         return $this->json($data);
     }
@@ -79,13 +87,22 @@ class MusicController extends AbstractController
         $music = $entityManager->getRepository(Music::class)->find($id);
 
         if (!$music) {
-            return $this->json('No music found for id' . $id, 404);
+            return $this->json('No music found for id=' . $id, 404);
         }
+
+        $songName = $request->request->get('songName');
+        $author = $request->request->get('author');
+
+        if (empty($songName) && empty($author))
+            return $this->json('SongName and Author are required', 400);
+        if (empty($songName))
+            return $this->json('SongName are required', 400);
+        if (empty($author))
+            return $this->json('Author are required', 400);
 
         $music->setSongName($request->request->get('songName'));
         $music->setAuthor($request->request->get('author'));
         $music->setAlbum($request->request->get('album'));
-        $music->setKbps($request->request->get('kbps'));
 
         $entityManager->flush();
 
@@ -93,8 +110,7 @@ class MusicController extends AbstractController
             'id' => $music->getId(),
             'songName' => $music->getSongName(),
             'author' => $music->getAuthor(),
-            'album'=> $music->getAlbum(),
-            'kbps'=> $music->getKbps(),
+            'album' => $music->getAlbum(),
         ];
         return $this->json($data);
     }
@@ -113,4 +129,33 @@ class MusicController extends AbstractController
         $entityManager->flush();
         return $this->json('Deleted a music successfully with id ' . $id);
     }
+
+    #[Route('/music/filter/{field}', name: 'music_filter', methods: ['get'])]
+    public function filter(ManagerRegistry $doctrine, string $field): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $fields = ['songName', 'author', 'album'];
+        if (empty($field))
+            return $this->json('FieldName are required', 405);
+        if (in_array($field, $fields)) {
+            $data = $entityManager->getRepository(Music::class)->findField($field);
+            return $this->json($data);
+        } else
+            return $this->json('No data with fieldname:' . $field, 400);
+    }
+
+    #[Route('/music/search/{field}', name: 'music_search', methods: ['get'])]
+    public function search(ManagerRegistry $doctrine, string $field): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $fields = ['songName', 'author', 'album'];
+        if (empty($field))
+            return $this->json('FieldName are required', 405);
+        if (isset($field, $fields)) {
+            $data = $entityManager->getRepository(Music::class)->searchBySongName($field);
+            return $this->json($data);
+        } else
+            return $this->json('No data with fieldname:' . $field, 400);
+    }
+
 }
