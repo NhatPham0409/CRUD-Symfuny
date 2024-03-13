@@ -47,18 +47,7 @@ class StudentServiceImpl implements IStudentService
         $entityManager->persist($student);
         $entityManager->flush();
 
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-            'address' => $student->getAddress(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_CREATED);
+        return new JsonResponse($student->toArray(), Response::HTTP_CREATED);
     }
 
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
@@ -76,16 +65,7 @@ class StudentServiceImpl implements IStudentService
 
         //Loop through the list of students and store the data in an array
         foreach ($studentList as $student) {
-            $data[] = [
-                'id' => $student->getId(),
-                'first_name' => $student->getFirstName(),
-                'last_name' => $student->getLastName(),
-                'dob' => $student->getDob()->format('d-m-Y'),
-                'gender' => $student->getGender(),
-                'address' => $student->getAddress(),
-                'phone' => $student->getPhone(),
-                'email' => $student->getEmail(),
-            ];
+            $data[] = $student->toArray();
         }
 
         return new JsonResponse($data, Response::HTTP_OK);
@@ -100,18 +80,7 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'address' => $student->getAddress(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_OK);
+        return new JsonResponse($student->toArray(), Response::HTTP_OK);
     }
 
     /**
@@ -154,19 +123,7 @@ class StudentServiceImpl implements IStudentService
         }
 
         $entityManager->flush();
-
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'address' => $student->getAddress(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_OK);
+        return new JsonResponse($student->toArray(), Response::HTTP_OK);
     }
 
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse

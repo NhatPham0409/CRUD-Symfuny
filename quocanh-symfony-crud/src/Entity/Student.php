@@ -124,4 +124,18 @@ class Student
 
         return $this;
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'first_name' => $this->getFirstName(),
+            'last_name' => $this->getLastName(),
+            'gender' => $this->getGender(),
+            'dob' => $this->getDob()->format('d-m-Y'),
+            'phone' => $this->getPhone(),
+            'email' => $this->getEmail(),
+            'address' => $this->getAddress(),
+        ];
+    }
 }
