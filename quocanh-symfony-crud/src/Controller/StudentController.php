@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/api/v1', name: 'api_')]
 class StudentController extends AbstractController
@@ -20,10 +21,10 @@ class StudentController extends AbstractController
     }
 
     #[Route('/student', name: 'student_create', methods: ['POST'])]
-    public function create(ManagerRegistry $doctrine, Request $raw): JsonResponse
+    public function create(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
         //return StudentServiceImpl::createStudent($doctrine, $raw);
-        return $this->studentService->createStudent($doctrine, $raw);
+        return $this->studentService->createStudent($doctrine, $raw, $validator);
     }
 
     #[Route('/student', name: 'student_list', methods: ['GET'])]
@@ -34,17 +35,17 @@ class StudentController extends AbstractController
     }
 
     #[Route('/student/{id}', name: 'student_get', methods: ['GET'])]
-    public function getOneStudent(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function get(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         //return StudentServiceImpl::getStudentById($doctrine, $id);
         return $this->studentService->getStudentById($doctrine, $id);
     }
 
     #[Route('/student/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
-    public function update(ManagerRegistry $doctrine, Request $raw, int $id): JsonResponse
+    public function update(ManagerRegistry $doctrine, Request $raw, int $id, ValidatorInterface $validator): JsonResponse
     {
         //return StudentServiceImpl::updateStudentInfo($doctrine, $id, $raw);
-        return $this->studentService->updateStudentInfo($doctrine, $id, $raw);
+        return $this->studentService->updateStudentInfo($doctrine, $id, $raw, $validator);
     }
 
     #[Route('/student/{id}', name: 'student_delete', methods: ['DELETE'])]

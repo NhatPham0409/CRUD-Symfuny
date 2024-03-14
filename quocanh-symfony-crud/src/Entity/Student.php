@@ -6,6 +6,7 @@ use App\Repository\StudentRepository;
 use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 class Student
@@ -16,24 +17,32 @@ class Student
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
     private ?string $last_name = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank]
     private ?DateTimeInterface $dob = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
     private ?string $gender = null;
 
     #[ORM\Column(length: 15)]
+    #[Assert\NotBlank]
     private ?string $phone = null;
 
     #[ORM\Column(length: 100)]
+    #[Assert\NotBlank]
+    #[Assert\Email]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $address = null;
 
     public function getId(): ?int
@@ -123,5 +132,32 @@ class Student
         $this->address = $address;
 
         return $this;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'first_name' => $this->getFirstName(),
+            'last_name' => $this->getLastName(),
+            'gender' => $this->getGender(),
+            'dob' => $this->getDob()->format('d-m-Y'),
+            'phone' => $this->getPhone(),
+            'email' => $this->getEmail(),
+            'address' => $this->getAddress(),
+        ];
+    }
+
+    public static function fieldSetterMap(): array
+    {
+        return [
+            'first_name' => 'setFirstName',
+            'last_name' => 'setLastName',
+            'dob' => 'setDob',
+            'gender' => 'setGender',
+            'phone' => 'setPhone',
+            'email' => 'setEmail',
+            'address' => 'setAddress'
+        ];
     }
 }

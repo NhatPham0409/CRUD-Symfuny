@@ -10,59 +10,60 @@ use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StudentServiceImpl implements IStudentService
 {
     /**
      * @throws Exception
      */
-    public function createStudent(ManagerRegistry $doctrine, Request $raw): JsonResponse
+    public function createStudent(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
-        //lấy dữ liệu từ request body và chuyển đổi thành mảng
+        //Get the request data and convert to an array
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
             return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
         }
-
-        if (!$request['first_name'] || !$request['last_name'] || !$request['dob'] ||
-            !$request['phone'] || !$request['email'] || !$request['address'] || !$request['gender']) {
-            return new JsonResponse(['error' => 'Missing required fields for a student'], Response::HTTP_BAD_REQUEST);
+        if (!$this->isValidDateFormat($request['dob'], 'Y-m-d')) {
+            return new JsonResponse(['error' => 'Invalid date of birth'], Response::HTTP_BAD_REQUEST);
         }
 
-        //ấy entity manager để thao tác với DB
+        //Get the entity manager to interact with database
         $entityManager = $doctrine->getManager();
 
         $student = new Student();
-        $student->setFirstName($request['first_name']);
-        $student->setLastName($request['last_name']);
-        $student->setDob(new DateTime($request['dob']));
-        $student->setGender($request['gender']);
-        $student->setAddress($request['address']);
-        $student->setPhone($request['phone']);
-        $student->setEmail($request['email']);
+        $student->setFirstName($request['first_name'] ?? null);
+        $student->setLastName($request['last_name'] ?? null);
+        $student->setPhone($request['phone'] ?? null);
+        $student->setDob(new \DateTime($request['dob'] ?? null));
+        $student->setEmail($request['email'] ?? null);
+        $student->setGender($request['gender'] ?? null);
+        $student->setAddress($request['address'] ?? null);
+
+        //Validate the student object before storing it in DB
+        $errors = $validator->validate($student);
+
+        if (count($errors) > 0) {
+            //Return the array of validation errors as a JSON response
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            // Trả về response với thông báo lỗi
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
 
         //lưu trữ dữ liệu vào DB
         $entityManager->persist($student);
         $entityManager->flush();
 
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-            'address' => $student->getAddress(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_CREATED);
+        return new JsonResponse($student->toArray(), Response::HTTP_CREATED);
     }
 
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
     {
-        //lấy tất cả sinh viên từ DB (tham chiếu đến entity Student và gọi phương thức findAll())
+        //Get all students from the database (refer to the Student entity and call the findAll() method)
         $studentList = $doctrine
             ->getRepository(Student::class)
             ->findAll();
@@ -73,18 +74,9 @@ class StudentServiceImpl implements IStudentService
 
         $data = [];
 
-        //duyệt danh sách sinh viên và chuyển đổi thành mảng
+        //Convert the list of student objects to an array of associative arrays
         foreach ($studentList as $student) {
-            $data[] = [
-                'id' => $student->getId(),
-                'first_name' => $student->getFirstName(),
-                'last_name' => $student->getLastName(),
-                'dob' => $student->getDob()->format('d-m-Y'),
-                'gender' => $student->getGender(),
-                'address' => $student->getAddress(),
-                'phone' => $student->getPhone(),
-                'email' => $student->getEmail(),
-            ];
+            $data[] = $student->toArray();
         }
 
         return new JsonResponse($data, Response::HTTP_OK);
@@ -92,31 +84,20 @@ class StudentServiceImpl implements IStudentService
 
     public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //lấy sinh viên theo id (tham chiếu đến entity Student và gọi phương thức find())
+        //Get the student from the database based on the id (refer to the Student entity and call the find() method)
         $student = $doctrine->getRepository(Student::class)->find($id);
 
         if (!$student) {
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'address' => $student->getAddress(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_OK);
+        return new JsonResponse($student->toArray(), Response::HTTP_OK);
     }
 
     /**
      * @throws Exception
      */
-    public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw): JsonResponse
+    public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw, ValidatorInterface $validator): JsonResponse
     {
         $request = json_decode($raw->getContent(), true);
 
@@ -131,22 +112,20 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        foreach (['first_name', 'last_name', 'dob', 'gender', 'address', 'phone', 'email'] as $property) {
-            if (isset($request[$property])) {
-                switch ($property) {
-                    case 'dob':
-                        $student->setDob(new DateTime($request['dob']));
-                        break;
-                    case 'first_name':
-                        $student->setFirstName($request['first_name']);
-                        break;
-                    case 'last_name':
-                        $student->setLastName($request['last_name']);
-                        break;
-                    default:
-                        $methodName = 'set' . ucfirst($property);
-                        $student->$methodName($request[$property]);
-                        break;
+        $fieldSetterMap = Student::fieldSetterMap();
+
+        // Validate and update student properties based on JSON data
+        foreach ($request as $key => $value) {
+            if ($key == 'dob' && $value != null && !$this->isValidDateFormat($value, 'Y-m-d')) {
+                return new JsonResponse(['error' => 'Invalid date of birth'], Response::HTTP_BAD_REQUEST);
+            }
+            else if ($key == 'email' && $value != null && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+                return new JsonResponse(['error' => 'Invalid email'], Response::HTTP_BAD_REQUEST);
+            }
+            if (array_key_exists($key, $fieldSetterMap) && $value != null) {
+                $setter = $fieldSetterMap[$key];
+                if (method_exists($student, $setter)) {
+                    $student->$setter($value);
                 }
             }
         }
@@ -154,18 +133,7 @@ class StudentServiceImpl implements IStudentService
         $entityManager->persist($student);
         $entityManager->flush();
 
-        $data = [
-            'id' => $student->getId(),
-            'first_name' => $student->getFirstName(),
-            'last_name' => $student->getLastName(),
-            'dob' => $student->getDob()->format('d-m-Y'),
-            'gender' => $student->getGender(),
-            'address' => $student->getAddress(),
-            'phone' => $student->getPhone(),
-            'email' => $student->getEmail(),
-        ];
-
-        return new JsonResponse($data, Response::HTTP_OK);
+        return new JsonResponse($student->toArray(), Response::HTTP_OK);
     }
 
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
@@ -181,5 +149,10 @@ class StudentServiceImpl implements IStudentService
         $entityManager->flush();
 
         return new JsonResponse(['status' => 'Student with id ' . $id . 'has been deleted'], Response::HTTP_NO_CONTENT);
+    }
+
+    private function isValidDateFormat(string $dateString, string $format): bool {
+        $date = DateTime::createFromFormat($format, $dateString);
+        return $date && $date->format($format) === $dateString;
     }
 }
