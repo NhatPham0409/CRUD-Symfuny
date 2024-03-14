@@ -69,7 +69,7 @@ class StudentServiceImpl implements IStudentService
             ->findAll();
 
         if (!$studentList) {
-            return new JsonResponse(['error' => 'No students found'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
         }
 
         $data = [];
@@ -124,6 +124,7 @@ class StudentServiceImpl implements IStudentService
             }
             if (array_key_exists($key, $fieldSetterMap) && $value != null) {
                 $setter = $fieldSetterMap[$key];
+
                 if (method_exists($student, $setter)) {
                     $student->$setter($value);
                 }
@@ -136,7 +137,7 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse($student->toArray(), Response::HTTP_OK);
     }
 
-    public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function deleteStudent(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);

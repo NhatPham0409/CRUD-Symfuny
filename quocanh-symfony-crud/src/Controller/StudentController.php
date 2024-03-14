@@ -23,35 +23,30 @@ class StudentController extends AbstractController
     #[Route('/student', name: 'student_create', methods: ['POST'])]
     public function create(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
-        //return StudentServiceImpl::createStudent($doctrine, $raw);
         return $this->studentService->createStudent($doctrine, $raw, $validator);
     }
 
     #[Route('/student', name: 'student_list', methods: ['GET'])]
     public function index(ManagerRegistry $doctrine): JsonResponse
     {
-        //return StudentServiceImpl::getAllStudents($doctrine);
         return $this->studentService->getAllStudents($doctrine);
     }
 
     #[Route('/student/{id}', name: 'student_get', methods: ['GET'])]
     public function get(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //return StudentServiceImpl::getStudentById($doctrine, $id);
         return $this->studentService->getStudentById($doctrine, $id);
     }
 
     #[Route('/student/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
     public function update(ManagerRegistry $doctrine, Request $raw, int $id, ValidatorInterface $validator): JsonResponse
     {
-        //return StudentServiceImpl::updateStudentInfo($doctrine, $id, $raw);
         return $this->studentService->updateStudentInfo($doctrine, $id, $raw, $validator);
     }
 
     #[Route('/student/{id}', name: 'student_delete', methods: ['DELETE'])]
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //return StudentServiceImpl::delete($doctrine, $id);
-        return $this->studentService->delete($doctrine, $id);
+        return $this->studentService->deleteStudent($doctrine, $id);
     }
 }

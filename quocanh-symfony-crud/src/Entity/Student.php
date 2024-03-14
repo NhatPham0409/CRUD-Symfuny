@@ -24,13 +24,13 @@ class Student
     #[Assert\NotBlank]
     private ?string $last_name = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotBlank]
-    private ?DateTimeInterface $dob = null;
-
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
     private ?string $gender = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank]
+    private ?DateTimeInterface $dob = null;
 
     #[ORM\Column(length: 15)]
     #[Assert\NotBlank]
@@ -44,6 +44,9 @@ class Student
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     private ?string $address = null;
+
+    #[ORM\ManyToOne(inversedBy: 'student')]
+    private ?ClassRoom $classRoom = null;
 
     public function getId(): ?int
     {
@@ -134,6 +137,18 @@ class Student
         return $this;
     }
 
+    public function getClassRoom(): ?ClassRoom
+    {
+        return $this->classRoom;
+    }
+
+    public function setClassRoom(?ClassRoom $classRoom): static
+    {
+        $this->classRoom = $classRoom;
+
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
@@ -145,6 +160,7 @@ class Student
             'phone' => $this->getPhone(),
             'email' => $this->getEmail(),
             'address' => $this->getAddress(),
+            'classRoom' => $this->getClassRoom()->getRoomName()
         ];
     }
 
@@ -157,7 +173,8 @@ class Student
             'gender' => 'setGender',
             'phone' => 'setPhone',
             'email' => 'setEmail',
-            'address' => 'setAddress'
+            'address' => 'setAddress',
+            'classRoom' => 'setClassRoom'
         ];
     }
 }
