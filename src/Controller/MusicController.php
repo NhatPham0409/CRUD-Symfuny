@@ -148,14 +148,9 @@ class MusicController extends AbstractController
     public function search(ManagerRegistry $doctrine, string $field): JsonResponse
     {
         $entityManager = $doctrine->getManager();
-        $fields = ['songName', 'author', 'album'];
-        if (empty($field))
-            return $this->json('FieldName are required', 405);
-        if (isset($field, $fields)) {
-            $data = $entityManager->getRepository(Music::class)->searchBySongName($field);
-            return $this->json($data);
-        } else
-            return $this->json('No data with fieldname:' . $field, 400);
+        $data = $entityManager->getRepository(Music::class)->searchBySongName($field);
+//        dd($data);
+        return $this->json($data);
     }
 
 }

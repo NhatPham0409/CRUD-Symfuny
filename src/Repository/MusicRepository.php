@@ -55,14 +55,15 @@ class MusicRepository extends ServiceEntityRepository
             $field = 'm.album';
 
         return $this->createQueryBuilder('m')
+
             ->select('m.id', $field)
             ->getQuery()
             ->getResult();
     }
 
-    public function searchBySongName(string $value): array
+    public function searchBySongName(string $value=null): array
     {
-        $searchParam = $value . "%";
+        $searchParam ="%". $value . "%";
         return $this->createQueryBuilder('m')
             ->select('m.id', 'm.songName')
             ->andWhere('m.songName LIKE :val')
