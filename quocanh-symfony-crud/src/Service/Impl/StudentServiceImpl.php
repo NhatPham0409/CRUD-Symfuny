@@ -15,6 +15,13 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StudentServiceImpl implements IStudentService
 {
+    private function isValidDateFormat(string $dateString, string $format): bool
+    {
+        $date = DateTime::createFromFormat($format, $dateString);
+        return $date && $date->format($format) === $dateString;
+    }
+
+    //CRUD operations for student
     /**
      * @throws Exception
      */
@@ -231,8 +238,22 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse(['status' => 'Student with id ' . $id . 'has been deleted'], Response::HTTP_NO_CONTENT);
     }
 
-    private function isValidDateFormat(string $dateString, string $format): bool {
-        $date = DateTime::createFromFormat($format, $dateString);
-        return $date && $date->format($format) === $dateString;
+    //Search operations for student
+    public function findStudentByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        $query = $request->query->all();
+        $studentRepository = $doctrine->getRepository(Student::class);
+        $studentList = $studentRepository->findStudentByFields($query);
+
+        if (!$studentList) {
+            return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
+        }
+
+        $data = [];
+        foreach ($studentList as $student) {
+            $data[] = $student->toArrayForStudent();
+        }
+
+        return new JsonResponse($data, Response::HTTP_OK);
     }
 }

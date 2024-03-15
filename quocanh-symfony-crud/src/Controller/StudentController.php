@@ -21,6 +21,7 @@ class StudentController extends AbstractController
         $this->studentService = $studentService;
     }
 
+    //CRUD operations for student
     #[Route(name: 'student_create', methods: ['POST'])]
     public function create(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
@@ -67,5 +68,12 @@ class StudentController extends AbstractController
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->studentService->deleteStudent($doctrine, $id);
+    }
+
+    //Search operations for student
+    #[Route('/search', name: 'student_search', methods: ['GET'])]
+    public function search(ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        return $this->studentService->findStudentByFields($doctrine, $request);
     }
 }

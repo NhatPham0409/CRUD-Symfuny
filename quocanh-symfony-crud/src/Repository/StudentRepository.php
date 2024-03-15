@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\ClassRoom;
 use App\Entity\Student;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -27,6 +29,37 @@ class StudentRepository extends ServiceEntityRepository
             ->orderBy('s.id', 'ASC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findStudentByFields(array $criteria): array
+    {
+        $queryBuilder = $this->createQueryBuilder('s');
+
+        // Join with Class entity
+        $queryBuilder->leftJoin('s.classes', 'c');
+
+        foreach ($criteria as $key => $value) {
+            // Get metadata for Student and Class entities
+            $studentMetadata = $this->getClassMetadata();
+            $classMetadata = $this->getEntityManager()->getClassMetadata(ClassRoom::class);
+
+            // Check if the key belongs to Student entity
+            if (isset($studentMetadata->fieldMappings[$key])) {
+                $queryBuilder
+                    ->andWhere("s.{$key} LIKE :{$key}")
+                    ->setParameter($key, '%' . $value . '%');
+            }
+            // Check if the key belongs to Class entity
+            elseif (isset($classMetadata->fieldMappings[$key])) {
+                $queryBuilder
+                    ->andWhere("c.{$key} LIKE :{$key}")
+                    ->setParameter($key, '%' . $value . '%');
+            }
+            // Handle unsupported criteria or ignore it
+        }
+
+        $query = $queryBuilder->getQuery();
+        return $query->getResult();
     }
 
     //    /**
