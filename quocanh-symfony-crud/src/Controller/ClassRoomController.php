@@ -50,6 +50,12 @@ class ClassRoomController extends AbstractController
         return $this->classRoomService->addStudent($doctrine, $classId, $studentId);
     }
 
+    #[Route('/classroom/{classId}/student/{studentId}', name: 'class_student_remove', methods: ['DELETE'])]
+    public function removeStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
+    {
+        return $this->classRoomService->removeStudent($doctrine, $classId, $studentId);
+    }
+
     #[Route('/classroom/{id}', name: 'class_delete', methods: ['DELETE'])]
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {

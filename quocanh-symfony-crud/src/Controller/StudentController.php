@@ -32,7 +32,7 @@ class StudentController extends AbstractController
         return $this->studentService->getAllStudents($doctrine);
     }
 
-    #[Route('/student/{id}', name: 'student_getinfo', methods: ['GET'])]
+    #[Route('/student/{id}', name: 'student_get_info', methods: ['GET'])]
     public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->studentService->getStudentInfoById($doctrine, $id);
@@ -57,7 +57,7 @@ class StudentController extends AbstractController
     }
 
     #[Route('/student/{studentId}/class/{classId}', name: 'student_unenroll', methods: ['DELETE'])]
-    public function unenroll(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    public function unEnroll(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
     {
         return $this->studentService->unenrollStudent($doctrine, $studentId, $classId);
     }

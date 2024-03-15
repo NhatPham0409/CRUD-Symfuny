@@ -84,6 +84,15 @@ class ClassRoom
         return $this;
     }
 
+    public function toArrayForStudent(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'room_name' => $this->getClassName(),
+            'teacher_name' => $this->getTeacherName()
+        ];
+    }
+
     public function toArrayForClass(): array
     {
         return [
@@ -91,15 +100,6 @@ class ClassRoom
             'room_name' => $this->getClassName(),
             'teacher_name' => $this->getTeacherName(),
             'studentList' => $this->getStudentList()->map(fn(Student $student) => $student->toArrayForClass())->toArray()
-        ];
-    }
-
-    public function toArrayForStudent(): array
-    {
-        return [
-            'id' => $this->getId(),
-            'room_name' => $this->getClassName(),
-            'teacher_name' => $this->getTeacherName()
         ];
     }
 

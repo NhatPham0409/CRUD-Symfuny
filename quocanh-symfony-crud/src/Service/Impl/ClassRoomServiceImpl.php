@@ -104,21 +104,44 @@ class ClassRoomServiceImpl implements IClassRoomService
         return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
-    public function addStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse {
+    public function addStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
+    {
         $entityManager = $doctrine->getManager();
         $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
-
-        if (!$classRoom) {
-            return new JsonResponse(['error' => 'No class room found for id: ' . $classId], Response::HTTP_NOT_FOUND);
-        }
-
         $student = $entityManager->getRepository(Student::class)->find($studentId);
 
-        if (!$student) {
-            return new JsonResponse(['error' => 'No student found for id: ' . $studentId], Response::HTTP_NOT_FOUND);
+        if (!$student || !$classRoom) {
+            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
+            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($classRoom->getStudentList()->contains($student)) {
+            return new JsonResponse(['error' => 'Student already enrolled in the class'], Response::HTTP_BAD_REQUEST);
         }
 
         $classRoom->addStudent($student);
+        $entityManager->persist($classRoom);
+        $entityManager->flush();
+
+        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
+    }
+
+    public function removeStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
+        $student = $entityManager->getRepository(Student::class)->find($studentId);
+
+        if (!$student || !$classRoom) {
+            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
+            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$classRoom->getStudentList()->contains($student)) {
+            return new JsonResponse(['error' => 'Student not enrolled in the class'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $classRoom->removeStudent($student);
         $entityManager->persist($classRoom);
         $entityManager->flush();
 

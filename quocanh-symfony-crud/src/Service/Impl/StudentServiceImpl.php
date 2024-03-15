@@ -37,7 +37,7 @@ class StudentServiceImpl implements IStudentService
         $student->setFirstName($request['first_name'] ?? null);
         $student->setLastName($request['last_name'] ?? null);
         $student->setPhone($request['phone'] ?? null);
-        $student->setDob(new \DateTime($request['dob'] ?? null));
+        $student->setDob(new DateTime($request['dob'] ?? null));
         $student->setEmail($request['email'] ?? null);
         $student->setGender($request['gender'] ?? null);
         $student->setAddress($request['address'] ?? null);
@@ -168,12 +168,13 @@ class StudentServiceImpl implements IStudentService
         $student = $entityManager->getRepository(Student::class)->find($studentId);
         $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
 
-        if (!$student) {
-            return new JsonResponse(['error' => 'No student found for id: ' . $studentId], Response::HTTP_NOT_FOUND);
+        if (!$student || !$classRoom) {
+            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
+            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
         }
 
-        if (!$classRoom) {
-            return new JsonResponse(['error' => 'No class found for id: ' . $classId], Response::HTTP_NOT_FOUND);
+        if ($student->getClassList()->contains($classRoom)) {
+            return new JsonResponse(['error' => 'Student already enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
         }
 
         $student->addClassList($classRoom);
@@ -189,12 +190,13 @@ class StudentServiceImpl implements IStudentService
         $student = $entityManager->getRepository(Student::class)->find($studentId);
         $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
 
-        if (!$student) {
-            return new JsonResponse(['error' => 'No student found for id: ' . $studentId], Response::HTTP_NOT_FOUND);
+        if (!$student || !$classRoom) {
+            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
+            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
         }
 
-        if (!$classRoom) {
-            return new JsonResponse(['error' => 'No class found for id: ' . $classId], Response::HTTP_NOT_FOUND);
+        if (!$student->getClassList()->contains($classRoom)) {
+            return new JsonResponse(['error' => 'Student not enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
         }
 
         $student->removeClassList($classRoom);
