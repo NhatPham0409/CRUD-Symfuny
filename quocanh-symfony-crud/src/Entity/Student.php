@@ -20,14 +20,17 @@ class Student
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^[a-zA-Z ]+$/', message: 'Only letters and spaces are allowed')]
     private ?string $first_name = null;
 
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^[a-zA-Z ]+$/', message: 'Only letters and spaces are allowed')]
     private ?string $last_name = null;
 
     #[ORM\Column(length: 50)]
     #[Assert\NotBlank]
+    #[Assert\Choice(choices: ["Nam", "Nữ"], message: "Choose a valid gender: Nam or Nữ")]
     private ?string $gender = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
@@ -36,6 +39,7 @@ class Student
 
     #[ORM\Column(length: 15)]
     #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^0[0-9]{9,}$/', message: 'Invalid phone number')]
     private ?string $phone = null;
 
     #[ORM\Column(length: 100)]
@@ -45,6 +49,7 @@ class Student
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '^[a-zA-Z0-9,/ ]+$/', message: 'Only letters, numbers, spaces and commas are allowed')]
     private ?string $address = null;
 
     #[ORM\ManyToMany(targetEntity: ClassRoom::class, mappedBy: 'studentList')]

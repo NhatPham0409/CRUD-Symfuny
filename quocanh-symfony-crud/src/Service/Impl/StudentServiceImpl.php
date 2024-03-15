@@ -156,6 +156,16 @@ class StudentServiceImpl implements IStudentService
             }
         }
 
+        $errors = $validator->validate($student);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[$error->getPropertyPath()] = $error->getMessage();
+            }
+            return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
+        }
+
         $entityManager->persist($student);
         $entityManager->flush();
 

@@ -18,9 +18,11 @@ class ClassRoom
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9 ]+$/', message: 'Only letters, numbers and spaces are allowed')]
     private ?string $class_name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\Regex(pattern: '/^[a-zA-Z ]+$/', message: 'Only letters and spaces are allowed')]
     private ?string $teacher_name = null;
 
     #[ORM\ManyToMany(targetEntity: Student::class, inversedBy: 'classList')]
