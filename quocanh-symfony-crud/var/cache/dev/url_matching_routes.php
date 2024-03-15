@@ -28,6 +28,8 @@ return [
                     .')'
                     .'|student/([^/]++)(?'
                         .'|(*:133)'
+                        .'|/class(*:147)'
+                        .'|(*:155)'
                     .')'
                 .')'
             .')/?$}sDu',
@@ -40,8 +42,9 @@ return [
         ],
         98 => [[['_route' => 'api_class_student_add', '_controller' => 'App\\Controller\\ClassRoomController::addStudent'], ['classId', 'studentId'], ['PUT' => 0, 'PATCH' => 1], null, false, true, null]],
         105 => [[['_route' => 'api_class_delete', '_controller' => 'App\\Controller\\ClassRoomController::delete'], ['id'], ['DELETE' => 0], null, false, true, null]],
-        133 => [
-            [['_route' => 'api_student_get', '_controller' => 'App\\Controller\\StudentController::get'], ['id'], ['GET' => 0], null, false, true, null],
+        133 => [[['_route' => 'api_student_getinfo', '_controller' => 'App\\Controller\\StudentController::getStudentInfoById'], ['id'], ['GET' => 0], null, false, true, null]],
+        147 => [[['_route' => 'api_student_class', '_controller' => 'App\\Controller\\StudentController::getStudentClassInfo'], ['id'], ['GET' => 0], null, false, false, null]],
+        155 => [
             [['_route' => 'api_student_update', '_controller' => 'App\\Controller\\StudentController::update'], ['id'], ['PUT' => 0, 'PATCH' => 1], null, false, true, null],
             [['_route' => 'api_student_delete', '_controller' => 'App\\Controller\\StudentController::delete'], ['id'], ['DELETE' => 0], null, false, true, null],
             [null, null, null, null, false, false, 0],

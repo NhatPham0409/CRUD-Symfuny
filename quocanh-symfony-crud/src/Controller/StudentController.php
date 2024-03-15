@@ -32,16 +32,34 @@ class StudentController extends AbstractController
         return $this->studentService->getAllStudents($doctrine);
     }
 
-    #[Route('/student/{id}', name: 'student_get', methods: ['GET'])]
-    public function get(ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/student/{id}', name: 'student_getinfo', methods: ['GET'])]
+    public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        return $this->studentService->getStudentById($doctrine, $id);
+        return $this->studentService->getStudentInfoById($doctrine, $id);
+    }
+
+    #[Route('/student/{id}/class', name: 'student_class', methods: ['GET'])]
+    public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse
+    {
+        return $this->studentService->getStudentClassInfo($doctrine, $id);
     }
 
     #[Route('/student/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
     public function update(ManagerRegistry $doctrine, Request $raw, int $id, ValidatorInterface $validator): JsonResponse
     {
         return $this->studentService->updateStudentInfo($doctrine, $id, $raw, $validator);
+    }
+
+    #[Route('/student/{studentId}/class/{classId}', name: 'student_enroll', methods: ['POST'])]
+    public function enroll(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    {
+        return $this->studentService->enrollStudent($doctrine, $studentId, $classId);
+    }
+
+    #[Route('/student/{studentId}/class/{classId}', name: 'student_unenroll', methods: ['DELETE'])]
+    public function unenroll(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    {
+        return $this->studentService->unenrollStudent($doctrine, $studentId, $classId);
     }
 
     #[Route('/student/{id}', name: 'student_delete', methods: ['DELETE'])]

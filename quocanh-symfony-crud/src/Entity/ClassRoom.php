@@ -16,19 +16,19 @@ class ClassRoom
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
-    private ?string $room_name = null;
+    private ?string $class_name = null;
 
-    #[ORM\OneToMany(targetEntity: Student::class, mappedBy: 'classRoom')]
-    private Collection $student;
-
-    #[ORM\Column(length: 200)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $teacher_name = null;
+
+    #[ORM\ManyToMany(targetEntity: Student::class, inversedBy: 'classList')]
+    private Collection $studentList;
 
     public function __construct()
     {
-        $this->student = new ArrayCollection();
+        $this->studentList = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -36,14 +36,14 @@ class ClassRoom
         return $this->id;
     }
 
-    public function getRoomName(): ?string
+    public function getClassName(): ?string
     {
-        return $this->room_name;
+        return $this->class_name;
     }
 
-    public function setRoomName(string $room_name): static
+    public function setClassName(string $class_name): static
     {
-        $this->room_name = $room_name;
+        $this->class_name = $class_name;
 
         return $this;
     }
@@ -53,7 +53,7 @@ class ClassRoom
         return $this->teacher_name;
     }
 
-    public function setTeacherName(string $teacher_name): static
+    public function setTeacherName(?string $teacher_name): static
     {
         $this->teacher_name = $teacher_name;
 
@@ -63,16 +63,15 @@ class ClassRoom
     /**
      * @return Collection<int, Student>
      */
-    public function getStudent(): Collection
+    public function getStudentList(): Collection
     {
-        return $this->student;
+        return $this->studentList;
     }
 
     public function addStudent(Student $student): static
     {
-        if (!$this->student->contains($student)) {
-            $this->student->add($student);
-            $student->setClassRoom($this);
+        if (!$this->studentList->contains($student)) {
+            $this->studentList->add($student);
         }
 
         return $this;
@@ -80,23 +79,27 @@ class ClassRoom
 
     public function removeStudent(Student $student): static
     {
-        if ($this->student->removeElement($student)) {
-            // set the owning side to null (unless already changed)
-            if ($student->getClassRoom() === $this) {
-                $student->setClassRoom(null);
-            }
-        }
+        $this->studentList->removeElement($student);
 
         return $this;
     }
 
-    public function toArray(): array
+    public function toArrayForClass(): array
     {
         return [
             'id' => $this->getId(),
-            'room_name' => $this->getRoomName(),
+            'room_name' => $this->getClassName(),
             'teacher_name' => $this->getTeacherName(),
-            'students' => $this->getStudent()->map(fn(Student $student) => $student->toArray())->toArray()
+            'studentList' => $this->getStudentList()->map(fn(Student $student) => $student->toArrayForClass())->toArray()
+        ];
+    }
+
+    public function toArrayForStudent(): array
+    {
+        return [
+            'id' => $this->getId(),
+            'room_name' => $this->getClassName(),
+            'teacher_name' => $this->getTeacherName()
         ];
     }
 

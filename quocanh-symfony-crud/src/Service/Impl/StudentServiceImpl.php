@@ -2,6 +2,7 @@
 
 namespace App\Service\Impl;
 
+use App\Entity\ClassRoom;
 use App\Entity\Student;
 use App\Service\IStudentService;
 use DateTime;
@@ -58,7 +59,7 @@ class StudentServiceImpl implements IStudentService
         $entityManager->persist($student);
         $entityManager->flush();
 
-        return new JsonResponse($student->toArray(), Response::HTTP_CREATED);
+        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_CREATED);
     }
 
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
@@ -76,13 +77,13 @@ class StudentServiceImpl implements IStudentService
 
         //Convert the list of student objects to an array of associative arrays
         foreach ($studentList as $student) {
-            $data[] = $student->toArray();
+            $data[] = $student->toArrayForClass();
         }
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         //Get the student from the database based on the id (refer to the Student entity and call the find() method)
         $student = $doctrine->getRepository(Student::class)->find($id);
@@ -91,7 +92,31 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        return new JsonResponse($student->toArray(), Response::HTTP_OK);
+        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
+    }
+
+    public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse
+    {
+        $student = $doctrine
+            ->getRepository(Student::class)
+            ->find($id);
+
+        if (!$student) {
+            return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
+        }
+
+        $classList = $student->getClassList();
+
+        if ($classList->isEmpty()) {
+            return new JsonResponse(['error' => 'No class found for student id: ' . $id], Response::HTTP_NOT_FOUND);
+        }
+
+        $data = [];
+        foreach ($classList as $classRoom) {
+            $data[] = $classRoom->toArrayForStudent();
+        }
+
+        return new JsonResponse($data, Response::HTTP_OK);
     }
 
     /**
@@ -134,7 +159,49 @@ class StudentServiceImpl implements IStudentService
         $entityManager->persist($student);
         $entityManager->flush();
 
-        return new JsonResponse($student->toArray(), Response::HTTP_OK);
+        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
+    }
+
+    public function enrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $student = $entityManager->getRepository(Student::class)->find($studentId);
+        $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
+
+        if (!$student) {
+            return new JsonResponse(['error' => 'No student found for id: ' . $studentId], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$classRoom) {
+            return new JsonResponse(['error' => 'No class found for id: ' . $classId], Response::HTTP_NOT_FOUND);
+        }
+
+        $student->addClassList($classRoom);
+        $entityManager->persist($student);
+        $entityManager->flush();
+
+        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
+    }
+
+    public function unenrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    {
+        $entityManager = $doctrine->getManager();
+        $student = $entityManager->getRepository(Student::class)->find($studentId);
+        $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
+
+        if (!$student) {
+            return new JsonResponse(['error' => 'No student found for id: ' . $studentId], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$classRoom) {
+            return new JsonResponse(['error' => 'No class found for id: ' . $classId], Response::HTTP_NOT_FOUND);
+        }
+
+        $student->removeClassList($classRoom);
+        $entityManager->persist($student);
+        $entityManager->flush();
+
+        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
     }
 
     public function deleteStudent(ManagerRegistry $doctrine, int $id): JsonResponse

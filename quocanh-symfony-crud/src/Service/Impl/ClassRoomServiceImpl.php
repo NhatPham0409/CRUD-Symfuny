@@ -24,7 +24,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         $entityManager = $doctrine->getManager();
 
         $classRoom = new ClassRoom();
-        $classRoom->setRoomName($request['room_name'] ?? null);
+        $classRoom->setClassName($request['room_name'] ?? null);
         $classRoom->setTeacherName($request['teacher_name'] ?? null);
 
         $errors = $validator->validate($classRoom);
@@ -40,7 +40,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         $entityManager->persist($classRoom);
         $entityManager->flush();
 
-        return new JsonResponse($classRoom->toArray(), Response::HTTP_CREATED);
+        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_CREATED);
     }
 
     public function getAllClassRooms(ManagerRegistry $doctrine): JsonResponse
@@ -54,7 +54,7 @@ class ClassRoomServiceImpl implements IClassRoomService
 
         $data = [];
         foreach ($classList as $classRoom) {
-            $data[] = $classRoom->toArray();
+            $data[] = $classRoom->toArrayForClass();
         }
 
         return new JsonResponse($data, Response::HTTP_OK);
@@ -68,7 +68,7 @@ class ClassRoomServiceImpl implements IClassRoomService
             return new JsonResponse(['error' => 'No class room found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
-        return new JsonResponse($classRoom->toArray(), Response::HTTP_OK);
+        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
     public function updateClassInfo(ManagerRegistry $doctrine, int $id, Request $raw, ValidatorInterface $validator): JsonResponse
@@ -101,7 +101,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         $entityManager->persist($classRoom);
         $entityManager->flush();
 
-        return new JsonResponse($classRoom->toArray(), Response::HTTP_OK);
+        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
     public function addStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse {
@@ -122,7 +122,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         $entityManager->persist($classRoom);
         $entityManager->flush();
 
-        return new JsonResponse($classRoom->toArray(), Response::HTTP_OK);
+        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
     public function deleteClass(ManagerRegistry $doctrine, int $id): JsonResponse

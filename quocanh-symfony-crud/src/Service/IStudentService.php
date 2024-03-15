@@ -11,7 +11,10 @@ interface IStudentService
 {
     public function createStudent(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse;
     public function getAllStudents(ManagerRegistry $doctrine): JsonResponse;
-    public function getStudentById(ManagerRegistry $doctrine, int $id): JsonResponse;
+    public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse;
+    public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse;
     public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw, ValidatorInterface $validator): JsonResponse;
+    public function enrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse;
+    public function unenrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse;
     public function deleteStudent(ManagerRegistry $doctrine, int $id): JsonResponse;
 }
