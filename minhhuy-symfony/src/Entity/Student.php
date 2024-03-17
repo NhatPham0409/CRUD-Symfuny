@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-//use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 class Student
@@ -18,19 +18,23 @@ class Student
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-//    #[Assert\NotBlank]
-//    #[Assert\Length(max: 255)]
+    #[Assert\NotBlank(message: "name cannot be blank")]
+    #[Assert\Length(max: 255)]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z\s]+$/",
+        message: "name must contain only letters and spaces"
+    )]
     private ?string $Name = null;
 
     #[ORM\Column(length: 10, nullable: true)]
-//    #[Assert\Length(max: 10)]
+    #[Assert\Length(max: 10)]
     private ?string $Phone = null;
 
     #[ORM\ManyToMany(targetEntity: Classes::class, mappedBy: 'ClassId')]
     private Collection $StudentId;
 
     #[ORM\Column(length: 255, nullable: true)]
-//    #[Assert\Email]
+    #[Assert\Email]
     private ?string $Email = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
@@ -38,11 +42,13 @@ class Student
     private ?\DateTimeInterface $DoB = null;
 
     #[ORM\Column(length: 3)]
-//    #[Assert\Choice(choices: ['NAM', 'NU'])]
+    #[Assert\Choice(
+        choices: ['NAM', 'NU'],message: 'Choose NAM or NU'
+    )]
     private ?string $Gender = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-//    #[Assert\Length(max: 255)]
+    #[Assert\Length(max: 255)]
     private ?string $Address = null;
 
     public function __construct()

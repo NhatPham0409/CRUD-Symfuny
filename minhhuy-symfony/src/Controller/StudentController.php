@@ -6,10 +6,12 @@ use DateTime;
 use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('api',name: 'api_student')]
 class StudentController extends AbstractController
@@ -36,16 +38,28 @@ class StudentController extends AbstractController
 
 
     #[Route('/create/student',name: 'create_student',methods: ['POST'])]
-    public function createStudent(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    public function createStudent(EntityManagerInterface $entityManager, Request $request,ValidatorInterface $validator): JsonResponse
     {
         $requestBody = json_decode($request->getContent(), true);
         $student = new Student();
-        $student->setName($requestBody['name']);
-        $student->setPhone($requestBody['phone']);
-        $student->setAddress($requestBody['address']);
-        $student->setEmail($requestBody['email']);
-        $student->setDoB(new DateTime($requestBody['dob']));
-        $student->setGender($requestBody['gender']);
+        $student->setName($requestBody['name'] ?? null);
+        $student->setPhone($requestBody['phone'] ?? null);
+        $student->setAddress($requestBody['address'] ?? null);
+        $student->setEmail($requestBody['email'] ?? null);
+        $student->setDoB(new DateTime($requestBody['dob'] ?? null));
+        $student->setGender($requestBody['gender'] ?? null);
+
+        // Validate the entity
+        $errors = $validator->validate($student);
+        // If there are validation errors, return them
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], 400);
+        }
 
         $entityManager->persist($student);
         $entityManager->flush();
@@ -80,13 +94,13 @@ class StudentController extends AbstractController
         return $this->json($data);
     }
     #[Route('/update/student/{id}',name: 'update_classes',methods: ['PUT','PATCH'])]
-    public  function updateStudent(ManagerRegistry $doctrine, Request $request,int $id) : JsonResponse
+    public  function updateStudent(ManagerRegistry $doctrine, Request $request,int $id,ValidatorInterface $validator) : JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);
 
         if (!$student) {
-            return $this->json('No student found for id' . $id, 404);
+            return $this->json(['error' => 'student not found'], 404);
         }
 
         $student->setName($request->request->get('name'));
@@ -95,6 +109,19 @@ class StudentController extends AbstractController
         $student->setEmail($request->request->get('email'));
         $student->setDoB(new DateTime($request->request->get('dob')));
         $student->setGender($request->get('gender'));
+
+        // Validate the updated entity
+        $errors = $validator->validate($student);
+
+        // If there are validation errors, return them
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['errors' => $errorMessages], 400);
+        }
+
         $entityManager->flush();
 
         $data =  [
