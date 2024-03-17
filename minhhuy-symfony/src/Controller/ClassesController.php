@@ -7,19 +7,23 @@ use App\Entity\Classes;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+
 #[Route('api',name: 'api_')]
 class ClassesController extends AbstractController
 {
     #[Route('/get/classes',name: 'get_classes',methods: ['GET'])]
-    public function getClasses(ManagerRegistry $doctrine) :JsonResponse
+    public function getClasses(ManagerRegistry $doctrine,Request $request) :JsonResponse
     {
         $classes = $doctrine->getRepository(Classes::class)->findAll();
+
 
        $data = array_map(function ($class){
            return [
@@ -31,6 +35,7 @@ class ClassesController extends AbstractController
 
         return $this->json($data);
     }
+
 
 
     #[Route('/create/class', name: 'create_class',methods: ['POST'])]

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\Classes;
+use DateTime;
 use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -11,18 +11,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('api',name: 'api_')]
+#[Route('api',name: 'api_student')]
 class StudentController extends AbstractController
 {
-    #[Route('/get/student',name: 'get_student',methods: ["GET"])]
-    public function getClasses(ManagerRegistry $doctrine) :JsonResponse
+    #[Route('/get/students',name: 'get_students',methods: ['GET'])]
+    public function getStudent(ManagerRegistry $doctrine) :JsonResponse
     {
         $students = $doctrine->getRepository(Student::class)->findAll();
 
-        $data = [];
-
-        foreach ($students as $student) {
-            $data[] = [
+        $data = array_map(function ($student){
+            return [
                 'id' => $student->getId(),
                 'name' => $student->getName(),
                 'phone' => $student->getPhone(),
@@ -31,14 +29,14 @@ class StudentController extends AbstractController
                 'dob' => $student->getDoB(),
                 'gender' => $student->getGender(),
             ];
-        }
+        },$students);
 
         return $this->json($data);
     }
 
 
-    #[Route('/create/student', name: 'create_student',methods: ["POST"])]
-    public function createClasses(EntityManagerInterface $entityManager, Request $request): JsonResponse
+    #[Route('/create/student',name: 'create_student',methods: ['POST'])]
+    public function createStudent(EntityManagerInterface $entityManager, Request $request): JsonResponse
     {
         $requestBody = json_decode($request->getContent(), true);
         $student = new Student();
@@ -46,7 +44,7 @@ class StudentController extends AbstractController
         $student->setPhone($requestBody['phone']);
         $student->setAddress($requestBody['address']);
         $student->setEmail($requestBody['email']);
-        $student->setDoB($requestBody['dob']);
+        $student->setDoB(new DateTime($requestBody['dob']));
         $student->setGender($requestBody['gender']);
 
         $entityManager->persist($student);
@@ -64,8 +62,8 @@ class StudentController extends AbstractController
         return $this->json($data);
     }
 
-    #[Route('/get/class/{id}',name: 'get_classes_byId',methods: ["GET"])]
-    public function getClassesById(ManagerRegistry $doctrine,int $id) : JsonResponse
+    #[Route('/get/student/{id}',name: 'get_student_by_id',methods: ['GET'])]
+    public function getStudentById(ManagerRegistry $doctrine,int $id) : JsonResponse
     {
         $student = $doctrine->getRepository(Student::class)->find($id);
 
@@ -81,8 +79,8 @@ class StudentController extends AbstractController
 
         return $this->json($data);
     }
-    #[Route('/update/class/{id}',name: 'update_classes',methods: ["PUT","PATCH"])]
-    public  function updateClasses(ManagerRegistry $doctrine, Request $request,int $id) : JsonResponse
+    #[Route('/update/student/{id}',name: 'update_classes',methods: ['PUT','PATCH'])]
+    public  function updateStudent(ManagerRegistry $doctrine, Request $request,int $id) : JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($id);
@@ -91,8 +89,12 @@ class StudentController extends AbstractController
             return $this->json('No student found for id' . $id, 404);
         }
 
-        $student->setClassName($request->request->get('class_name'));
-        $student->setTeacher($request->request->get('teacher'));
+        $student->setName($request->request->get('name'));
+        $student->setPhone($request->request->get('phone'));
+        $student->setAddress($request->request->get('address'));
+        $student->setEmail($request->request->get('email'));
+        $student->setDoB(new DateTime($request->request->get('dob')));
+        $student->setGender($request->get('gender'));
         $entityManager->flush();
 
         $data =  [

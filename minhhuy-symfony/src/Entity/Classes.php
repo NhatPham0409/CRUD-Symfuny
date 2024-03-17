@@ -25,6 +25,10 @@ class Classes
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Teacher name cannot be blank")]
+    #[Assert\Regex(
+        pattern: "/^[a-zA-Z\s]+$/",
+        message: "Teacher name must contain only letters and spaces"
+    )]
     private ?string $Teacher = null;
 
     public function __construct()

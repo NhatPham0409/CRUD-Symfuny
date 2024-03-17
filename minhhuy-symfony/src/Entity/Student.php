@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+//use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: StudentRepository::class)]
 class Student
@@ -17,24 +18,31 @@ class Student
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+//    #[Assert\NotBlank]
+//    #[Assert\Length(max: 255)]
     private ?string $Name = null;
 
     #[ORM\Column(length: 10, nullable: true)]
+//    #[Assert\Length(max: 10)]
     private ?string $Phone = null;
 
     #[ORM\ManyToMany(targetEntity: Classes::class, mappedBy: 'ClassId')]
     private Collection $StudentId;
 
     #[ORM\Column(length: 255, nullable: true)]
+//    #[Assert\Email]
     private ?string $Email = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+//    #[Assert\Date]
     private ?\DateTimeInterface $DoB = null;
 
     #[ORM\Column(length: 3)]
+//    #[Assert\Choice(choices: ['NAM', 'NU'])]
     private ?string $Gender = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+//    #[Assert\Length(max: 255)]
     private ?string $Address = null;
 
     public function __construct()
@@ -110,9 +118,12 @@ class Student
         return $this;
     }
 
-    public function getDoB(): ?\DateTimeInterface
+    public function getDoB(): ?string
     {
-        return $this->DoB;
+        if($this->DoB instanceof \DateTimeInterface){
+            return $this->DoB->format('d-m-Y'); //Fomat as YYYY-MM-DD
+        }
+        return null;
     }
 
     public function setDoB(?\DateTimeInterface $DoB): static
@@ -121,6 +132,7 @@ class Student
 
         return $this;
     }
+
 
     public function getGender(): ?string
     {
