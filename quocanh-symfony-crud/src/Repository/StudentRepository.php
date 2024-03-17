@@ -5,7 +5,6 @@ namespace App\Repository;
 use App\Entity\ClassRoom;
 use App\Entity\Student;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -36,7 +35,7 @@ class StudentRepository extends ServiceEntityRepository
         $queryBuilder = $this->createQueryBuilder('s');
 
         // Join with Class entity
-        $queryBuilder->leftJoin('s.classes', 'c');
+        $queryBuilder->leftJoin('s.classList', 'c');
 
         foreach ($criteria as $key => $value) {
             // Get metadata for Student and Class entities
@@ -46,16 +45,15 @@ class StudentRepository extends ServiceEntityRepository
             // Check if the key belongs to Student entity
             if (isset($studentMetadata->fieldMappings[$key])) {
                 $queryBuilder
-                    ->andWhere("s.{$key} LIKE :{$key}")
+                    ->andWhere("s.$key LIKE :$key")
                     ->setParameter($key, '%' . $value . '%');
             }
             // Check if the key belongs to Class entity
             elseif (isset($classMetadata->fieldMappings[$key])) {
                 $queryBuilder
-                    ->andWhere("c.{$key} LIKE :{$key}")
+                    ->andWhere("c.$key LIKE :$key")
                     ->setParameter($key, '%' . $value . '%');
             }
-            // Handle unsupported criteria or ignore it
         }
 
         $query = $queryBuilder->getQuery();
