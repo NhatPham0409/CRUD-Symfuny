@@ -34,7 +34,7 @@ class Student
     )]
     private ?string $phone = null;
 
-    #[ORM\ManyToMany(targetEntity: Classes::class, mappedBy: 'ClassId')]
+    #[ORM\ManyToMany(targetEntity: Classes::class, mappedBy: 'students')]
     private Collection $classes;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -101,7 +101,7 @@ class Student
     {
         if (!$this->classes->contains($class)) {
             $this->classes->add($class);
-//            $class->addStudent($this);// Ensure bidirectional consistency
+            $class->addStudent($this);// Ensure bidirectional consistency
         }
 
         return $this;
@@ -109,7 +109,9 @@ class Student
 
     public function removeClass(Classes $class): static
     {
-        $this->classes->removeElement($class);
+        if($this->classes->removeElement($class)){
+            $class->removeStudent($this);// Ensure bidirectional consistency
+        }
 
         return $this;
     }

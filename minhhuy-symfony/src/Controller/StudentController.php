@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Classes;
 use DateTime;
 use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
@@ -12,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[Route('api',name: 'api_student')]
 class StudentController extends AbstractController
@@ -152,4 +154,104 @@ class StudentController extends AbstractController
 
         return $this->json('Deleted a student successfully with id '.$id);
     }
+
+    #[Route('/add/class-to-student', name: 'add_class_to_student', methods: ['POST'])]
+    public function addClassToStudent(EntityManagerInterface $entityManager, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $requestData = json_decode($request->getContent(), true);
+
+        // Validate the request data
+        $violations = $validator->validate($requestData, [
+            new Assert\Collection([
+                'student_id' => [new Assert\NotBlank(), new Assert\Type(['type' => 'integer'])],
+                'class_id' => [new Assert\NotBlank(), new Assert\Type(['type' => 'integer'])],
+            ])
+        ]);
+
+        // If there are validation errors, return them
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+            return $this->json(['errors' => $errors], 400);
+        }
+
+        // Retrieve student and class entities
+        $student = $entityManager->getRepository(Student::class)->find($requestData['student_id']);
+        $class = $entityManager->getRepository(Classes::class)->find($requestData['class_id']);
+
+        // Check if student and class entities exist
+        if (!$student) {
+            return $this->json(['error' => 'Student not found'], 404);
+        }
+
+        if (!$class) {
+            return $this->json(['error' => 'Class not found'], 404);
+        }
+
+        // Check if the student already contains the class
+        if ($student->getClasses()->contains($class)) {
+            return $this->json(['error' => 'Student already belongs to this class'], 400);
+        }
+
+        // Add class to student
+        $student->addClass($class);
+
+        // Persist changes
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Class added to student successfully'], 200);
+    }
+
+    #[Route('/remove/class-from-student', name: 'remove_class_from_student', methods: ['POST'])]
+    public function removeClassFromStudent(EntityManagerInterface $entityManager, Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        $requestData = json_decode($request->getContent(), true);
+
+        // Validate the request data
+        $violations = $validator->validate($requestData, [
+            new Assert\Collection([
+                'student_id' => [new Assert\NotBlank(), new Assert\Type(['type' => 'integer'])],
+                'class_id' => [new Assert\NotBlank(), new Assert\Type(['type' => 'integer'])],
+            ])
+        ]);
+
+        // If there are validation errors, return them
+        if (count($violations) > 0) {
+            $errors = [];
+            foreach ($violations as $violation) {
+                $errors[$violation->getPropertyPath()] = $violation->getMessage();
+            }
+            return $this->json(['errors' => $errors], 400);
+        }
+
+        // Retrieve student and class entities
+        $student = $entityManager->getRepository(Student::class)->find($requestData['student_id']);
+        $class = $entityManager->getRepository(Classes::class)->find($requestData['class_id']);
+
+        // Check if student and class entities exist
+        if (!$student) {
+            return $this->json(['error' => 'Student not found'], 404);
+        }
+
+        if (!$class) {
+            return $this->json(['error' => 'Class not found'], 404);
+        }
+
+        // Check if the student contains the class
+        if (!$student->getClasses()->contains($class)) {
+            return $this->json(['error' => 'Student does not belong to this class'], 400);
+        }
+
+        // Remove class from student
+        $student->removeClass($class);
+
+        // Persist changes
+        $entityManager->flush();
+
+        return $this->json(['message' => 'Class removed from student successfully'], 200);
+    }
+
+
 }
