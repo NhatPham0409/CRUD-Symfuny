@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Service\IStudentService;
 use Doctrine\Persistence\ManagerRegistry;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +35,7 @@ class StudentController extends AbstractController
         return $this->studentService->getAllStudents($doctrine);
     }
 
-    #[Route('/{id}', name: 'student_get_info', methods: ['GET'])]
+    #[Route('/get-info/{id}', name: 'student_get_info', methods: ['GET'])]
     public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->studentService->getStudentInfoById($doctrine, $id);
@@ -71,8 +72,8 @@ class StudentController extends AbstractController
     }
 
     //Search operations for student
-    #[Route('/search', name: 'student_search', methods: ['GET'])]
-    public function search(ManagerRegistry $doctrine, Request $request): JsonResponse
+    #[Route('/search-by-fields', name: 'student_search', methods: ['GET'])]
+    public function searchByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
         return $this->studentService->findStudentByFields($doctrine, $request);
     }
