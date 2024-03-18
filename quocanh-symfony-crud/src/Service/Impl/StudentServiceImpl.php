@@ -98,7 +98,7 @@ class StudentServiceImpl implements IStudentService
 
         $data = [
             'students' => $students,
-            'pagnition' => [
+            'pagination' => [
                 'current_page' => $page,
                 'total_students' => $totalItems,
                 'total_pages' => $totalPages,
@@ -292,7 +292,7 @@ class StudentServiceImpl implements IStudentService
 
         $data = [
             'students' => $students,
-            'pagnition' => [
+            'pagination' => [
                 'current_page' => $page,
                 'total_students' => $totalItems,
                 'total_pages' => $totalPages,

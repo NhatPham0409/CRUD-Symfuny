@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Service\IStudentService;
 use Doctrine\Persistence\ManagerRegistry;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
