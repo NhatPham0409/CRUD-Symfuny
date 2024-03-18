@@ -107,13 +107,13 @@ class MovieService implements IMovieService
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    public function getMovieInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
+    public function getMovieInfoById(ManagerRegistry $doctrine, string $movieId): JsonResponse
     {
         $entityManager = $doctrine->getManager();
-        $movie = $entityManager->getRepository(Movie::class)->find($id);
+        $movie = $entityManager->getRepository(Movie::class)->findOneBy(['movieId' => $movieId]);
 
         if ($movie == null) {
-            return new JsonResponse(['error' => 'The movie does not exist'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['error' => 'No movie found for id: ' . $movieId], Response::HTTP_NOT_FOUND);
         }
 
         return new JsonResponse($movie->toArrayMovie(), Response::HTTP_OK);

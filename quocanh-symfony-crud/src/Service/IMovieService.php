@@ -10,5 +10,5 @@ interface IMovieService
 {
     public function fetchMovieDataFromAPI(ManagerRegistry $doctrine, Request $request): JsonResponse;
     public function getAllMovies(\Doctrine\Persistence\ManagerRegistry $doctrine, Request $request): JsonResponse;
-    public function getMovieInfoById(\Doctrine\Persistence\ManagerRegistry $doctrine, int $id): JsonResponse;
+    public function getMovieInfoById(\Doctrine\Persistence\ManagerRegistry $doctrine, string $movieId): JsonResponse;
 }

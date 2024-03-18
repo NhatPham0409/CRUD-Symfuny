@@ -7,6 +7,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/v1/movie', name: 'api_')]
@@ -31,9 +32,9 @@ class MovieController extends AbstractController
         return $this->movieService->getAllMovies($doctrine, $request);
     }
 
-    #[Route('/get-info/{id}', name: 'app_movie_list', methods: ['GET'])]
-    public function list(ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/get-info', name: 'app_movie_list', methods: ['GET'])]
+    public function getMovieInfoById(ManagerRegistry $doctrine, #[MapQueryParameter] string $movieId): JsonResponse
     {
-        return $this->movieService->getMovieInfoById($doctrine, $id);
+        return $this->movieService->getMovieInfoById($doctrine, $movieId);
     }
 }

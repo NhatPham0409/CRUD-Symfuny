@@ -102,7 +102,8 @@ class Movie
     public function toArrayMovie(): array
     {
         return [
-            'id' => $this->getMovieId(),
+            'id' => $this->getId(),
+            'movie_id' => $this->getMovieId(),
             'title' => $this->getTitle(),
             'plot' => $this->getPlot(),
             'release_year' => $this->getReleaseYear(),
