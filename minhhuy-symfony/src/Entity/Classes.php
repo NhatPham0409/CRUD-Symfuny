@@ -88,4 +88,13 @@ class Classes
 
         return $this;
     }
+
+    public  function toArrayForStudent():array
+    {
+        return [
+            'id' =>$this->getId(),
+            'class_name' =>$this->getClassName(),
+            'teacher' =>$this->getTeacher()
+        ];
+    }
 }

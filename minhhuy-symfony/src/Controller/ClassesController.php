@@ -6,9 +6,9 @@ use App\Entity\Classes;
 
 
 use App\Entity\Student;
+use App\Repository\ClassesRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use Doctrine\ORM\QueryBuilder;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -239,6 +239,60 @@ class ClassesController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['message' => 'Student removed from class successfully'], 200);
+    }
+
+    //Search and pagination
+    #[Route('/search/classes',name: 'get_classes',methods: ['GET'])]
+    public function search(Request $request, ClassesRepository $classesRepository):JsonResponse
+    {
+        $searchParams = $request->query->all();
+
+        $page = $request->query->getInt('page', 1); // Get the current page number from the request
+        $perPage = $request->query->getInt('perPage', 5); // Get the number of items per page from the request
+
+
+        // Use the findByFieldsPaginated method from the repository to search for classes with pagination
+        $paginator = $classesRepository->findByFieldsPaginated($searchParams,$page,$perPage);
+        $totalItems = $paginator->count(); // Total items without pagination
+        $data = [];
+
+        // Iterate over the paginated results
+        foreach ($paginator as $class) {
+            $classData = [
+                'id' => $class->getId(),
+                'class_name' => $class->getClassName(),
+                'teacher' => $class->getTeacher(),
+                'students' => []
+            ];
+
+            // Include student data
+            foreach ($class->getStudents() as $student) {
+                $classData['students'][] = [
+                    'id' => $student->getId(),
+                    'name' => $student->getName(),
+                    'dob' => $student->getDoB(),
+                    // Include other student information as needed
+                ];
+            }
+
+            $data[] = $classData;
+        }
+
+        // Construct the pagination metadata
+        $pagination = [
+            'currentPage' => $page,
+            'perPage' => $perPage,
+            'totalItems' => $totalItems,
+            'totalPages' => ceil($totalItems / $perPage)
+        ];
+
+        // Combine data and pagination metadata into the response
+        $response = [
+            'data' => $data,
+            'pagination' => $pagination
+        ];
+
+        return $this->json($response);
     }
 
 }

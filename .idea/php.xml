@@ -74,11 +74,20 @@
       <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/symfony/var-exporter" />
       <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/symfony/cache" />
       <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/symfony/polyfill-intl-grapheme" />
+      <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/twig/twig" />
+      <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/knplabs/knp-paginator-bundle" />
+      <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/knplabs/knp-components" />
+      <path value="$PROJECT_DIR$/minhhuy-symfony/vendor/symfony/translation" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1" />
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
+  </component>
+  <component name="PhpUnit">
+    <phpunit_settings>
+      <PhpUnitSettings custom_loader_path="$PROJECT_DIR$/minhhuy-symfony/vendor/autoload.php" />
+    </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />

@@ -6,6 +6,8 @@
       <sourceFolder url="file://$MODULE_DIR$/minhhuy-symfony/tests" isTestSource="true" packagePrefix="App\Tests\" />
       <sourceFolder url="file://$MODULE_DIR$/quocanh-symfony-crud/src" isTestSource="false" packagePrefix="App\" />
       <sourceFolder url="file://$MODULE_DIR$/quocanh-symfony-crud/tests" isTestSource="true" packagePrefix="App\Tests\" />
+      <sourceFolder url="file://$MODULE_DIR$/spec" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/composer" />
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/doctrine/cache" />
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/doctrine/collections" />
@@ -68,6 +70,10 @@
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/symfony/yaml" />
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/willdurand/jsonp-callback-validator" />
       <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/willdurand/negotiation" />
+      <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/knplabs/knp-components" />
+      <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/knplabs/knp-paginator-bundle" />
+      <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/symfony/translation" />
+      <excludeFolder url="file://$MODULE_DIR$/minhhuy-symfony/vendor/twig/twig" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
