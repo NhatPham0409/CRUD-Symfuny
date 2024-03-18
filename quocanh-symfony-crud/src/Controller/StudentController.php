@@ -30,9 +30,9 @@ class StudentController extends AbstractController
     }
 
     #[Route(name: 'student_list', methods: ['GET'])]
-    public function index(ManagerRegistry $doctrine): JsonResponse
+    public function index(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        return $this->studentService->getAllStudents($doctrine);
+        return $this->studentService->getAllStudents($doctrine, $request);
     }
 
     #[Route('/get-info/{id}', name: 'student_get_info', methods: ['GET'])]
@@ -47,7 +47,7 @@ class StudentController extends AbstractController
         return $this->studentService->getStudentClassInfo($doctrine, $id);
     }
 
-    #[Route('/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/update/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
     public function update(ManagerRegistry $doctrine, Request $raw, int $id, ValidatorInterface $validator): JsonResponse
     {
         return $this->studentService->updateStudentInfo($doctrine, $id, $raw, $validator);
@@ -65,7 +65,7 @@ class StudentController extends AbstractController
         return $this->studentService->unenrollStudent($doctrine, $student_id, $class_id);
     }
 
-    #[Route('/{id}', name: 'student_delete', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'student_delete', methods: ['DELETE'])]
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->studentService->deleteStudent($doctrine, $id);

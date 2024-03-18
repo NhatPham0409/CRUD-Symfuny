@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\ClassRoom;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -11,7 +12,7 @@ use Doctrine\Persistence\ManagerRegistry;
  *
  * @method ClassRoom|null find($id, $lockMode = null, $lockVersion = null)
  * @method ClassRoom|null findOneBy(array $criteria, array $orderBy = null)
-// * @method ClassRoom[]    findAll()
+ * @method ClassRoom[]    findAll()
  * @method ClassRoom[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class ClassRoomRepository extends ServiceEntityRepository
@@ -21,12 +22,24 @@ class ClassRoomRepository extends ServiceEntityRepository
         parent::__construct($registry, ClassRoom::class);
     }
 
-    public function findAll(): array
+    public function findAllClassPagination(): Query
     {
         return $this->createQueryBuilder('c')
             ->orderBy('c.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
+    }
+
+    public function findClassByFields(array $criteria): Query
+    {
+        $queryBuilder = $this->createQueryBuilder('c');
+
+        // Thêm các điều kiện tìm kiếm vào truy vấn
+        foreach ($criteria as $field => $value) {
+            $queryBuilder->andWhere("c.$field LIKE :$field")
+                ->setParameter($field, '%' . $value . '%');
+        }
+
+        return $queryBuilder->orderBy('c.id', 'ASC')->getQuery();
     }
 
     //    /**

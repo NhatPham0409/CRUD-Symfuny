@@ -6,6 +6,8 @@ use App\Entity\ClassRoom;
 use App\Entity\Student;
 use DateTime;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -13,8 +15,8 @@ use Doctrine\Persistence\ManagerRegistry;
  *
  * @method Student|null find($id, $lockMode = null, $lockVersion = null)
  * @method Student|null findOneBy(array $criteria, array $orderBy = null)
-// * @method Student[]    findAll()
- * @method Student[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method Student[]    findAll()
+ * @method Student[] findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class StudentRepository extends ServiceEntityRepository
 {
@@ -23,23 +25,22 @@ class StudentRepository extends ServiceEntityRepository
         parent::__construct($registry, Student::class);
     }
 
-    public function findAll(): array
+    public function findAllStudentPagination(): Query
     {
         return $this->createQueryBuilder('s')
             ->orderBy('s.id', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
     }
 
     /**
      * @throws \Exception
      */
-    public function findStudentByFields(array $criteria): array
+    public function findStudentByFields(array $criteria): QueryBuilder
     {
         $queryBuilder = $this->createQueryBuilder('s');
 
         // Join with Class entity
-        $queryBuilder->leftJoin('s.classList', 'c');
+        $queryBuilder->join('s.classList', 'c');
 
         foreach ($criteria as $key => $value) {
             // Get metadata for Student and Class entities
@@ -77,11 +78,11 @@ class StudentRepository extends ServiceEntityRepository
                 $queryBuilder
                     ->andWhere("s.$key LIKE :$key")
                     ->setParameter($key, '%' . $value . '%');
-            }
-            // Check if the key belongs to Class entity
-            elseif (isset($classMetadata->fieldMappings[$key])) {
-                // Nếu $key là "dob" và $value là một năm (4 chữ số)
-                /*if ($key == "dob" && preg_match('/^\d{4}$/', $value)) {
+            } // Check if the key belongs to Class entity
+            else if (isset($classMetadata->fieldMappings[$key])) {
+                /*
+                 // If $key is "dob" and $value is a year (4 digits)
+                 if ($key == "dob" && preg_match('/^\d{4}$/', $value)) {
                     // Nếu $key là "dob" và $value là một năm (4 chữ số)
                     $startDate = new DateTime("$value-01-01");
                     $endDate = new DateTime("$value-12-31");
@@ -106,7 +107,7 @@ class StudentRepository extends ServiceEntityRepository
                     ->setParameter($key, '%' . $value . '%');
             }
         }
-        return $queryBuilder->getQuery()->getResult();
+        return $queryBuilder->orderBy('s.id', 'ASC')->distinct();
     }
 
     //    /**

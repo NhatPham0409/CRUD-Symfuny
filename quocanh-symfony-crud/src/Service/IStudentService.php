@@ -11,7 +11,7 @@ interface IStudentService
 {
     //CRUD operations for student
     public function createStudent(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse;
-    public function getAllStudents(ManagerRegistry $doctrine): JsonResponse;
+    public function getAllStudents(ManagerRegistry $doctrine, Request $request): JsonResponse;
     public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse;
     public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse;
     public function updateStudentInfo(ManagerRegistry $doctrine, int $id, Request $raw, ValidatorInterface $validator): JsonResponse;

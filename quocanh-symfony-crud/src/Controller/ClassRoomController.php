@@ -28,18 +28,18 @@ class ClassRoomController extends AbstractController
     }
 
     #[Route(name: 'class_list', methods: ['GET'])]
-    public function getAllClassRooms(ManagerRegistry $doctrine): JsonResponse
+    public function getAllClassRooms(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        return $this->classRoomService->getAllClassRooms($doctrine);
+        return $this->classRoomService->getAllClassRooms($doctrine, $request);
     }
 
-    #[Route('/{id}', name: 'class_get', methods: ['GET'])]
-    public function get(ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/get-info/{id}', name: 'class_get', methods: ['GET'])]
+    public function getClassInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->classRoomService->getClassById($doctrine, $id);
     }
 
-    #[Route('/{id}', name: 'class_update', methods: ['PUT', 'PATCH'])]
+    #[Route('/update/{id}', name: 'class_update', methods: ['PUT', 'PATCH'])]
     public function update(ManagerRegistry $doctrine, Request $request, int $id, ValidatorInterface $validator): JsonResponse
     {
         return $this->classRoomService->updateClassInfo($doctrine, $id, $request, $validator);
@@ -57,9 +57,15 @@ class ClassRoomController extends AbstractController
         return $this->classRoomService->removeStudent($doctrine, $classId, $studentId);
     }
 
-    #[Route('/{id}', name: 'class_delete', methods: ['DELETE'])]
+    #[Route('/delete/{id}', name: 'class_delete', methods: ['DELETE'])]
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
         return $this->classRoomService->deleteClass($doctrine, $id);
+    }
+
+    #[Route('/search-by-fields', name: 'class_search', methods: ['GET'])]
+    public function searchByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        return $this->classRoomService->findClassByFields($doctrine, $request);
     }
 }

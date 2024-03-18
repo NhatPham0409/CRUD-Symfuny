@@ -6,6 +6,7 @@ use App\Entity\ClassRoom;
 use App\Entity\Student;
 use App\Service\IStudentService;
 use DateTime;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,6 +23,7 @@ class StudentServiceImpl implements IStudentService
     }
 
     //CRUD operations for student
+
     /**
      * @throws Exception
      */
@@ -69,23 +71,39 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse($student->toArrayForStudent(), Response::HTTP_CREATED);
     }
 
-    public function getAllStudents(ManagerRegistry $doctrine): JsonResponse
+    public function getAllStudents(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
+        $perPage = $request->query->getInt('limit') ?? 10;
+        $page = $request->query->getInt('page') ?? 1;
+        $offset = ($page - 1) * $perPage;
         //Get all students from the database (refer to the Student entity and call the findAll() method)
-        $studentList = $doctrine
-            ->getRepository(Student::class)
-            ->findAll();
+        $query = $doctrine->getRepository(Student::class)->findAllStudentPagination();
+        $paginator = new Paginator($query);
+        $studentList = $paginator->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage)
+            ->getResult();
+        $totalItems = $paginator->count();
+        $totalPages = (int)ceil($totalItems / $perPage);
 
         if (!$studentList) {
             return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = [];
-
+        $students = [];
         //Convert the list of student objects to an array of associative arrays
         foreach ($studentList as $student) {
-            $data[] = $student->toArrayForClass();
+            $students[] = $student->toArrayForStudent();
         }
+
+        $data = [
+            'students' => $students,
+            'pagnition' => [
+                'current_page' => $page,
+                'total_students' => $totalItems,
+                'total_pages' => $totalPages,
+            ]
+        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
@@ -150,8 +168,7 @@ class StudentServiceImpl implements IStudentService
         foreach ($request as $key => $value) {
             if ($key == 'dob' && $value != null && !$this->isValidDateFormat($value, 'Y-m-d')) {
                 return new JsonResponse(['error' => 'Invalid date of birth'], Response::HTTP_BAD_REQUEST);
-            }
-            else if ($key == 'email' && $value != null && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            } else if ($key == 'email' && $value != null && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
                 return new JsonResponse(['error' => 'Invalid email'], Response::HTTP_BAD_REQUEST);
             }
             if (array_key_exists($key, $fieldSetterMap) && $value != null) {
@@ -241,18 +258,46 @@ class StudentServiceImpl implements IStudentService
     //Search operations for student
     public function findStudentByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        $query = $request->query->all();
-        $studentRepository = $doctrine->getRepository(Student::class);
-        $studentList = $studentRepository->findStudentByFields($query);
+        $perPage = $request->query->getInt('limit') ?? 10;
+        $page = $request->query->getInt('page') ?? 1;
+        $offset = ($page - 1) * $perPage;
+
+        $request->query->remove('limit');
+        $request->query->remove('page');
+
+        $criteria = $request->query->all();
+
+        $entityManager = $doctrine->getManager();
+        $studentRepository = $entityManager->getRepository(Student::class);
+        $qb = $studentRepository->findStudentByFields($criteria);
+
+        $paginator = new Paginator($qb, fetchJoinCollection: false);
+        $studentList = $paginator->getQuery()
+            ->setHint(Paginator::HINT_ENABLE_DISTINCT, false)
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage)
+            ->getResult();
+        $totalItems = $paginator->count();
+        $totalPages = (int)ceil($totalItems / $perPage);
 
         if (!$studentList) {
             return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
         }
 
-        $data = [];
+        $students = [];
+        //Convert the list of student objects to an array of associative arrays
         foreach ($studentList as $student) {
-            $data[] = $student->toArrayForStudent();
+            $students[] = $student->toArrayForStudent();
         }
+
+        $data = [
+            'students' => $students,
+            'pagnition' => [
+                'current_page' => $page,
+                'total_students' => $totalItems,
+                'total_pages' => $totalPages,
+            ]
+        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
