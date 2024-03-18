@@ -16,12 +16,12 @@ class Classes
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToMany(targetEntity: Student::class, inversedBy: 'StudentId')]
-    private Collection $ClassId;
+    #[ORM\ManyToMany(targetEntity: Student::class, inversedBy: 'classes')]
+    private Collection $students;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Class name cannot be blank")]
-    private ?string $ClassName = null;
+    private ?string $className = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: "Teacher name cannot be blank")]
@@ -29,11 +29,11 @@ class Classes
         pattern: "/^[a-zA-Z\s]+$/",
         message: "Teacher name must contain only letters and spaces"
     )]
-    private ?string $Teacher = null;
+    private ?string $teacher = null;
 
     public function __construct()
     {
-        $this->ClassId = new ArrayCollection();
+        $this->students = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -44,47 +44,47 @@ class Classes
     /**
      * @return Collection<int, Student>
      */
-    public function getClassId(): Collection
+    public function getStudents(): Collection
     {
-        return $this->ClassId;
+        return $this->students;
     }
 
-    public function addClassId(Student $classId): static
+    public function addStudent(Student $student): static
     {
-        if (!$this->ClassId->contains($classId)) {
-            $this->ClassId->add($classId);
+        if (!$this->students->contains($student)) {
+            $this->students->add($student);
+            //$student->addClass($this); // Ensure bidirectional consistency
         }
-
         return $this;
     }
 
-    public function removeClassId(Student $classId): static
+    public function removeStudent(Student $student): static
     {
-        $this->ClassId->removeElement($classId);
+        $this->students->removeElement($student);
 
         return $this;
     }
 
     public function getClassName(): ?string
     {
-        return $this->ClassName;
+        return $this->className;
     }
 
-    public function setClassName(string $ClassName): static
+    public function setClassName(string $className): static
     {
-        $this->ClassName = $ClassName;
+        $this->className = $className;
 
         return $this;
     }
 
     public function getTeacher(): ?string
     {
-        return $this->Teacher;
+        return $this->teacher;
     }
 
-    public function setTeacher(string $Teacher): static
+    public function setTeacher(string $teacher): static
     {
-        $this->Teacher = $Teacher;
+        $this->teacher = $teacher;
 
         return $this;
     }

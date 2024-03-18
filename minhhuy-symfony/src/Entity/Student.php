@@ -24,36 +24,40 @@ class Student
         pattern: "/^[a-zA-Z\s]+$/",
         message: "name must contain only letters and spaces"
     )]
-    private ?string $Name = null;
+    private ?string $name = null;
 
     #[ORM\Column(length: 10, nullable: true)]
     #[Assert\Length(max: 10)]
-    private ?string $Phone = null;
+    #[Assert\Regex(
+        pattern: "/^[0-9]/",
+        message: "name must contain only numbers"
+    )]
+    private ?string $phone = null;
 
     #[ORM\ManyToMany(targetEntity: Classes::class, mappedBy: 'ClassId')]
-    private Collection $StudentId;
+    private Collection $classes;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Email]
-    private ?string $Email = null;
+    private ?string $email = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
 //    #[Assert\Date]
-    private ?\DateTimeInterface $DoB = null;
+    private ?\DateTimeInterface $dob = null;
 
     #[ORM\Column(length: 3)]
     #[Assert\Choice(
         choices: ['NAM', 'NU'],message: 'Choose NAM or NU'
     )]
-    private ?string $Gender = null;
+    private ?string $gender = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(max: 255)]
-    private ?string $Address = null;
+    private ?string $address = null;
 
     public function __construct()
     {
-        $this->StudentId = new ArrayCollection();
+        $this->classes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -63,24 +67,24 @@ class Student
 
     public function getName(): ?string
     {
-        return $this->Name;
+        return $this->name;
     }
 
-    public function setName(string $Name): static
+    public function setName(string $name): static
     {
-        $this->Name = $Name;
+        $this->name = $name;
 
         return $this;
     }
 
     public function getPhone(): ?string
     {
-        return $this->Phone;
+        return $this->phone;
     }
 
-    public function setPhone(?string $Phone): static
+    public function setPhone(?string $phone): static
     {
-        $this->Phone = $Phone;
+        $this->phone = $phone;
 
         return $this;
     }
@@ -88,53 +92,51 @@ class Student
     /**
      * @return Collection<int, Classes>
      */
-    public function getStudentId(): Collection
+    public function getClasses(): Collection
     {
-        return $this->StudentId;
+        return $this->classes;
     }
 
-    public function addStudentId(Classes $studentId): static
+    public function addClass(Classes $class): static
     {
-        if (!$this->StudentId->contains($studentId)) {
-            $this->StudentId->add($studentId);
-            $studentId->addClassId($this);
+        if (!$this->classes->contains($class)) {
+            $this->classes->add($class);
+//            $class->addStudent($this);// Ensure bidirectional consistency
         }
 
         return $this;
     }
 
-    public function removeStudentId(Classes $studentId): static
+    public function removeClass(Classes $class): static
     {
-        if ($this->StudentId->removeElement($studentId)) {
-            $studentId->removeClassId($this);
-        }
+        $this->classes->removeElement($class);
 
         return $this;
     }
 
     public function getEmail(): ?string
     {
-        return $this->Email;
+        return $this->email;
     }
 
-    public function setEmail(?string $Email): static
+    public function setEmail(?string $email): static
     {
-        $this->Email = $Email;
+        $this->email = $email;
 
         return $this;
     }
 
     public function getDoB(): ?string
     {
-        if($this->DoB instanceof \DateTimeInterface){
-            return $this->DoB->format('d-m-Y'); //Fomat as YYYY-MM-DD
+        if($this->dob instanceof \DateTimeInterface){
+            return $this->dob->format('d-m-Y'); //Fomat as YYYY-MM-DD
         }
         return null;
     }
 
-    public function setDoB(?\DateTimeInterface $DoB): static
+    public function setDoB(?\DateTimeInterface $dob): static
     {
-        $this->DoB = $DoB;
+        $this->dob = $dob;
 
         return $this;
     }
@@ -142,24 +144,24 @@ class Student
 
     public function getGender(): ?string
     {
-        return $this->Gender;
+        return $this->gender;
     }
 
-    public function setGender(string $Gender): static
+    public function setGender(string $gender): static
     {
-        $this->Gender = $Gender;
+        $this->gender = $gender;
 
         return $this;
     }
 
     public function getAddress(): ?string
     {
-        return $this->Address;
+        return $this->address;
     }
 
-    public function setAddress(?string $Address): static
+    public function setAddress(?string $address): static
     {
-        $this->Address = $Address;
+        $this->address = $address;
 
         return $this;
     }
