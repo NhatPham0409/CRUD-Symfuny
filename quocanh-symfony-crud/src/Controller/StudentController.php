@@ -2,16 +2,16 @@
 
 namespace App\Controller;
 
-use App\Service\Impl\StudentServiceImpl;
 use App\Service\IStudentService;
 use Doctrine\Persistence\ManagerRegistry;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/v1', name: 'api_')]
+#[Route('/api/v1/student', name: 'api_')]
 class StudentController extends AbstractController
 {
     private IStudentService $studentService;
@@ -21,38 +21,59 @@ class StudentController extends AbstractController
         $this->studentService = $studentService;
     }
 
-    #[Route('/student', name: 'student_create', methods: ['POST'])]
-    public function create(ManagerRegistry $doctrine, Request $raw): JsonResponse
+    //CRUD operations for student
+    #[Route(name: 'student_create', methods: ['POST'])]
+    public function create(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
-        //return StudentServiceImpl::createStudent($doctrine, $raw);
-        return $this->studentService->createStudent($doctrine, $raw);
+        return $this->studentService->createStudent($doctrine, $raw, $validator);
     }
 
-    #[Route('/student', name: 'student_list', methods: ['GET'])]
-    public function index(ManagerRegistry $doctrine): JsonResponse
+    #[Route(name: 'student_list', methods: ['GET'])]
+    public function index(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
-        //return StudentServiceImpl::getAllStudents($doctrine);
-        return $this->studentService->getAllStudents($doctrine);
+        return $this->studentService->getAllStudents($doctrine, $request);
     }
 
-    #[Route('/student/{id}', name: 'student_get', methods: ['GET'])]
-    public function getOneStudent(ManagerRegistry $doctrine, int $id): JsonResponse
+    #[Route('/get-info/{id}', name: 'student_get_info', methods: ['GET'])]
+    public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //return StudentServiceImpl::getStudentById($doctrine, $id);
-        return $this->studentService->getStudentById($doctrine, $id);
+        return $this->studentService->getStudentInfoById($doctrine, $id);
     }
 
-    #[Route('/student/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
-    public function update(ManagerRegistry $doctrine, Request $raw, int $id): JsonResponse
+    #[Route('/{id}/class', name: 'student_class', methods: ['GET'])]
+    public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //return StudentServiceImpl::updateStudentInfo($doctrine, $id, $raw);
-        return $this->studentService->updateStudentInfo($doctrine, $id, $raw);
+        return $this->studentService->getStudentClassInfo($doctrine, $id);
     }
 
-    #[Route('/student/{id}', name: 'student_delete', methods: ['DELETE'])]
+    #[Route('/update/{id}', name: 'student_update', methods: ['PUT', 'PATCH'])]
+    public function update(ManagerRegistry $doctrine, Request $raw, int $id, ValidatorInterface $validator): JsonResponse
+    {
+        return $this->studentService->updateStudentInfo($doctrine, $id, $raw, $validator);
+    }
+
+    #[Route('/enroll', name: 'student_enroll', methods: ['POST'])]
+    public function enroll(ManagerRegistry $doctrine, #[MapQueryParameter] int $student_id, #[MapQueryParameter] int $class_id): JsonResponse
+    {
+        return $this->studentService->enrollStudent($doctrine, $student_id, $class_id);
+    }
+
+    #[Route('/unenroll', name: 'student_unenroll', methods: ['DELETE'])]
+    public function unEnroll(ManagerRegistry $doctrine, #[MapQueryParameter] int $student_id, #[MapQueryParameter] int $class_id): JsonResponse
+    {
+        return $this->studentService->unenrollStudent($doctrine, $student_id, $class_id);
+    }
+
+    #[Route('/delete/{id}', name: 'student_delete', methods: ['DELETE'])]
     public function delete(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //return StudentServiceImpl::delete($doctrine, $id);
-        return $this->studentService->delete($doctrine, $id);
+        return $this->studentService->deleteStudent($doctrine, $id);
+    }
+
+    //Search operations for student
+    #[Route('/search-by-fields', name: 'student_search', methods: ['GET'])]
+    public function searchByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
+    {
+        return $this->studentService->findStudentByFields($doctrine, $request);
     }
 }
