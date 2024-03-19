@@ -25,7 +25,7 @@ class MovieService implements IMovieService
     private function extractMovieId(string $url): string
     {
         $url = str_replace('https://www.imdb.com/title/', '', $url);
-        return strtok($url, '/?');
+        return strtok($url, '/');
     }
 
     /**
@@ -43,8 +43,9 @@ class MovieService implements IMovieService
 
         $thirdPartyAPI = 'https://imdb-api.tienich.workers.dev/title/' . $movieId;
 
-        $response = $this->client->request('GET', $thirdPartyAPI);
         try {
+            $response = $this->client->request('GET', $thirdPartyAPI);
+
             $content = $response->toArray();
 
             $entityManager = $doctrine->getManager();

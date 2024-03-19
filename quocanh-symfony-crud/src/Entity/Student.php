@@ -35,6 +35,7 @@ class Student
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank]
+    #[Assert\Date(message: 'Invalid date format')]
     private ?DateTimeInterface $dob = null;
 
     #[ORM\Column(length: 15)]
