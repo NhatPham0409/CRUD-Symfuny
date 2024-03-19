@@ -242,7 +242,7 @@ class ClassesController extends AbstractController
     }
 
     //Search and pagination
-    #[Route('/search/classes',name: 'get_classes',methods: ['GET'])]
+    #[Route('/search/classes',name: 'search_classes',methods: ['GET'])]
     public function search(Request $request, ClassesRepository $classesRepository):JsonResponse
     {
         $searchParams = $request->query->all();

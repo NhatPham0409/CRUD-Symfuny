@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Classes;
+use App\Repository\StudentRepository;
 use DateTime;
 use App\Entity\Student;
 use Doctrine\ORM\EntityManagerInterface;
@@ -251,6 +252,53 @@ class StudentController extends AbstractController
         $entityManager->flush();
 
         return $this->json(['message' => 'Class removed from student successfully'], 200);
+    }
+
+    #[Route('/search/students', name: 'search_students', methods: ['GET'])]
+    public function searchStudents(Request $request, StudentRepository $studentRepository): JsonResponse
+    {
+        $searchParams = $request->query->all();
+        $page = $request->query->getInt('page', 1); // Default to page 1 if not provided
+        $perPage = $request->query->getInt('perPage', 10); // Default to 10 items per page if not provided
+
+        // Use the findByFieldsPaginated method from the repository to search for students with pagination
+        $paginator = $studentRepository->findByFieldsPaginated($searchParams, $page, $perPage);
+
+        $totalItems = $paginator->count();
+        $totalPages = ceil($totalItems / $perPage);
+
+        $data = [];
+        foreach ($paginator as $student) {
+            $studentData = [
+                'id' => $student->getId(),
+                'name' => $student->getName(),
+                'phone' => $student->getPhone(),
+                'address' => $student->getAddress(),
+                'email' => $student->getEmail(),
+                'dob' => $student->getDoB(),
+                'gender' => $student->getGender(),
+                'classes' => []
+                // Include other student information as needed
+            ];
+            foreach ($student->getClasses() as $class){
+                $studentData['classes'][] = [
+                    'id' => $class->getId(),
+                    'class_name' => $class->getClassName(),
+                    'teacher' => $class->getTeacher()
+                ];
+            }
+
+            $data[] = $studentData;
+        }
+
+        $paginationData = [
+            'total_items' => $totalItems,
+            'total_pages' => $totalPages,
+            'current_page' => $page,
+            'items_per_page' => $perPage,
+        ];
+
+        return $this->json(['data' => $data, 'pagination' => $paginationData]);
     }
 
 
