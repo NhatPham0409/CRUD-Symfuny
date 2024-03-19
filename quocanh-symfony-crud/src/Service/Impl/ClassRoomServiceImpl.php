@@ -11,16 +11,41 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use function Webmozart\Assert\Tests\StaticAnalysis\null;
 
 class ClassRoomServiceImpl implements IClassRoomService
 {
+    private function paginationHelper($query, $perPage, $page): array
+    {
+        $offset = ($page - 1) * $perPage;
+        $paginator = new Paginator($query);
+        $classList = $paginator->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage)
+            ->getResult();
+        $totalItems = $paginator->count();
+        $totalPages = (int)ceil($totalItems / $perPage);
+
+        $classes = [];
+        foreach ($classList as $classRoom) {
+            $classes[] = $classRoom->toArrayForClass();
+        }
+
+        return [
+            'classes' => $classes,
+            'pagination' => [
+                'current_page' => $page,
+                'total_classes' => $totalItems,
+                'total_pages' => $totalPages,
+            ]
+        ];
+    }
+
     public function createClassRoom(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
-            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'No data found in the request'], Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $doctrine->getManager();
@@ -49,35 +74,14 @@ class ClassRoomServiceImpl implements IClassRoomService
     {
         $perPage = $request->query->getInt('limit') ?? 10;
         $page = $request->query->getInt('page') ?? 1;
-        $offset = ($page - 1) * $perPage;
 
         $query = $doctrine->getRepository(ClassRoom::class)->findAllClassPagination();
-        $paginator = new Paginator($query);
-        $classList = $paginator->getQuery()
-            ->setFirstResult($offset)
-            ->setMaxResults($perPage)
-            ->getResult();
-        $totalItems = $paginator->count();
-        $totalPages = (int)ceil($totalItems / $perPage);
 
-        if (!$classList) {
-            return new JsonResponse(['error' => 'No class room found.'], Response::HTTP_NOT_FOUND);
+        $data = $this->paginationHelper($query, $perPage, $page);
+
+        if (empty($data['classes'])) {
+            return new JsonResponse(['error' => 'No class room found'], Response::HTTP_NOT_FOUND);
         }
-
-        $classes = [];
-        foreach ($classList as $classRoom) {
-            $classes[] = $classRoom->toArrayForClass();
-        }
-
-        $data = [
-            'data' => $classes,
-            'meta' => [
-                'current_page' => $page,
-                'total_classes' => $totalItems,
-                'total_pages' => $totalPages,
-
-            ]
-        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
@@ -98,7 +102,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
-            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'No data found in the request'], Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $doctrine->getManager();
@@ -126,7 +130,7 @@ class ClassRoomServiceImpl implements IClassRoomService
         return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
-    public function addStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
+    private function classAddOrRemoveStudentHelper(ManagerRegistry $doctrine, int $classId, int $studentId, string $action): JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
@@ -137,37 +141,35 @@ class ClassRoomServiceImpl implements IClassRoomService
             return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
         }
 
-        if ($classRoom->getStudentList()->contains($student)) {
-            return new JsonResponse(['error' => 'Student already enrolled in the class'], Response::HTTP_BAD_REQUEST);
+        if ($action === 'add') {
+            if ($classRoom->getStudentList()->contains($student)) {
+                return new JsonResponse(['error' => 'The student already enrolled in the class'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $classRoom = $classRoom->addStudent($student);
+        }
+        else {
+            if (!$classRoom->getStudentList()->contains($student)) {
+                return new JsonResponse(['error' => 'The student not enrolled in the class'], Response::HTTP_BAD_REQUEST);
+            }
+
+            $classRoom = $classRoom->removeStudent($student);
         }
 
-        $classRoom->addStudent($student);
         $entityManager->persist($classRoom);
         $entityManager->flush();
 
         return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
     }
 
+    public function addStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
+    {
+        return $this->classAddOrRemoveStudentHelper($doctrine, $classId, $studentId, 'add');
+    }
+
     public function removeStudent(ManagerRegistry $doctrine, int $classId, int $studentId): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
-        $student = $entityManager->getRepository(Student::class)->find($studentId);
-
-        if (!$student || !$classRoom) {
-            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
-            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
-        }
-
-        if (!$classRoom->getStudentList()->contains($student)) {
-            return new JsonResponse(['error' => 'Student not enrolled in the class'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $classRoom->removeStudent($student);
-        $entityManager->persist($classRoom);
-        $entityManager->flush();
-
-        return new JsonResponse($classRoom->toArrayForClass(), Response::HTTP_OK);
+        return $this->classAddOrRemoveStudentHelper($doctrine, $classId, $studentId, 'remove');
     }
 
     public function deleteClass(ManagerRegistry $doctrine, int $id): JsonResponse
@@ -179,53 +181,31 @@ class ClassRoomServiceImpl implements IClassRoomService
             return new JsonResponse(['error' => 'No class room found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
+        $class_name = $classRoom->getClassName();
         $entityManager->remove($classRoom);
         $entityManager->flush();
 
-        return new JsonResponse(['message' => 'Class room deleted successfully.'], Response::HTTP_OK);
+        return new JsonResponse(['message' => 'Class ' . $class_name . ' has been deleted'], Response::HTTP_OK);
     }
 
     public function findClassByFields(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
         $perPage = $request->query->getInt('limit') ?? 10;
         $page = $request->query->getInt('page') ?? 1;
-        $offset = ($page - 1) * $perPage;
 
         $request->query->remove('limit');
         $request->query->remove('page');
 
         $criteria = $request->query->all();
 
-        $entityManager = $doctrine->getManager();
         $classRepository = $doctrine->getRepository(ClassRoom::class);
-        $classList = $classRepository->findClassByFields($criteria);
+        $query = $classRepository->findClassByFields($criteria);
 
-        $paginator = new Paginator($classList);
-        $classList = $paginator->getQuery()
-            ->setFirstResult($offset)
-            ->setMaxResults($perPage)
-            ->getResult();
+        $data = $this->paginationHelper($query, $perPage, $page);
 
-        $totalItems = count($paginator);
-        $totalPages = (int)ceil($totalItems / $perPage);
-
-        if (!$classList) {
-            return new JsonResponse(['error' => 'No class room found.'], Response::HTTP_NOT_FOUND);
+        if (empty($data['classes'])) {
+            return new JsonResponse(['error' => 'No class room found'], Response::HTTP_NOT_FOUND);
         }
-
-        $classes = [];
-        foreach ($classList as $classRoom) {
-            $classes[] = $classRoom->toArrayForClass();
-        }
-
-        $data = [
-            'data' => $classes,
-            'meta' => [
-                'current_page' => $page,
-                'total_classes' => $totalItems,
-                'total_pages' => $totalPages,
-            ]
-        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }

@@ -16,10 +16,39 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class StudentServiceImpl implements IStudentService
 {
+    private string $DATE_FORMAT = 'Y-m-d';
+
     private function isValidDateFormat(string $dateString, string $format): bool
     {
         $date = DateTime::createFromFormat($format, $dateString);
         return $date && $date->format($format) === $dateString;
+    }
+
+    private function paginationHelper($query, $perPage, $page): array
+    {
+        $offset = ($page - 1) * $perPage;
+        $paginator = new Paginator($query);
+        $studentList = $paginator->getQuery()
+            ->setFirstResult($offset)
+            ->setMaxResults($perPage)
+            ->getResult();
+        $totalItems = $paginator->count();
+        $totalPages = (int)ceil($totalItems / $perPage);
+
+        $students = [];
+        // Convert the list of student objects to an array of associative arrays
+        foreach ($studentList as $student) {
+            $students[] = $student->toArrayForStudent();
+        }
+
+        return [
+            'students' => $students,
+            'pagination' => [
+                'current_page' => $page,
+                'total_students' => $totalItems,
+                'total_pages' => $totalPages,
+            ]
+        ];
     }
 
     //CRUD operations for student
@@ -29,17 +58,19 @@ class StudentServiceImpl implements IStudentService
      */
     public function createStudent(ManagerRegistry $doctrine, Request $raw, ValidatorInterface $validator): JsonResponse
     {
-        //Get the request data and convert to an array
+        // Get the request data and convert to an array
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
-            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'No data found in the request'], Response::HTTP_BAD_REQUEST);
         }
-        if (!$this->isValidDateFormat($request['dob'], 'Y-m-d')) {
+
+        // Validate the date of birth format (cannot use Assert\Date in the entity class??)
+        if (!$this->isValidDateFormat($request['dob'], $this->DATE_FORMAT)) {
             return new JsonResponse(['error' => 'Invalid date of birth'], Response::HTTP_BAD_REQUEST);
         }
 
-        //Get the entity manager to interact with database
+        // Get the entity manager to interact with database
         $entityManager = $doctrine->getManager();
 
         $student = new Student();
@@ -51,20 +82,20 @@ class StudentServiceImpl implements IStudentService
         $student->setGender($request['gender'] ?? null);
         $student->setAddress($request['address'] ?? null);
 
-        //Validate the student object before storing it in DB
+        // Validate the student object before storing it in DB
         $errors = $validator->validate($student);
 
         if (count($errors) > 0) {
-            //Return the array of validation errors as a JSON response
+            // Return the array of validation errors as a JSON response
             $errorMessages = [];
             foreach ($errors as $error) {
                 $errorMessages[$error->getPropertyPath()] = $error->getMessage();
             }
-            // Trả về response với thông báo lỗi
+
             return new JsonResponse(['errors' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
 
-        //lưu trữ dữ liệu vào DB
+        // Store the student object in the database
         $entityManager->persist($student);
         $entityManager->flush();
 
@@ -73,44 +104,25 @@ class StudentServiceImpl implements IStudentService
 
     public function getAllStudents(ManagerRegistry $doctrine, Request $request): JsonResponse
     {
+        // Get the limit and page query parameters from the request
         $perPage = $request->query->getInt('limit') ?? 10;
         $page = $request->query->getInt('page') ?? 1;
-        $offset = ($page - 1) * $perPage;
-        //Get all students from the database (refer to the Student entity and call the findAll() method)
-        $query = $doctrine->getRepository(Student::class)->findAllStudentPagination();
-        $paginator = new Paginator($query);
-        $studentList = $paginator->getQuery()
-            ->setFirstResult($offset)
-            ->setMaxResults($perPage)
-            ->getResult();
-        $totalItems = $paginator->count();
-        $totalPages = (int)ceil($totalItems / $perPage);
 
-        if (!$studentList) {
+        // Get all students from the database (refer to the Student entity and call the findAllStudentPagination() method)
+        $query = $doctrine->getRepository(Student::class)->findAllStudentPagination();
+
+        $data = $this->paginationHelper($query, $perPage, $page);
+
+        if (empty($data['students'])) {
             return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
         }
-
-        $students = [];
-        //Convert the list of student objects to an array of associative arrays
-        foreach ($studentList as $student) {
-            $students[] = $student->toArrayForStudent();
-        }
-
-        $data = [
-            'students' => $students,
-            'pagination' => [
-                'current_page' => $page,
-                'total_students' => $totalItems,
-                'total_pages' => $totalPages,
-            ]
-        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
     public function getStudentInfoById(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        //Get the student from the database based on the id (refer to the Student entity and call the find() method)
+        // Get the student from the database based on the id (refer to the Student entity and call the find() method)
         $student = $doctrine->getRepository(Student::class)->find($id);
 
         if (!$student) {
@@ -122,9 +134,7 @@ class StudentServiceImpl implements IStudentService
 
     public function getStudentClassInfo(ManagerRegistry $doctrine, int $id): JsonResponse
     {
-        $student = $doctrine
-            ->getRepository(Student::class)
-            ->find($id);
+        $student = $doctrine->getRepository(Student::class)->find($id);
 
         if (!$student) {
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
@@ -152,7 +162,7 @@ class StudentServiceImpl implements IStudentService
         $request = json_decode($raw->getContent(), true);
 
         if (empty($request)) {
-            return new JsonResponse(['error' => 'No data found in the request.'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['error' => 'No data found in the request'], Response::HTTP_BAD_REQUEST);
         }
 
         $entityManager = $doctrine->getManager();
@@ -162,14 +172,14 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
+        // Get the fieldSetterMap from the Student entity
         $fieldSetterMap = Student::fieldSetterMap();
 
         // Validate and update student properties based on JSON data
         foreach ($request as $key => $value) {
-            if ($key == 'dob' && $value != null && !$this->isValidDateFormat($value, 'Y-m-d')) {
+            // Validate the date of birth format (cannot use Assert\Date in the entity class??)
+            if ($key == 'dob' && $value != null && !$this->isValidDateFormat($value, $this->DATE_FORMAT)) {
                 return new JsonResponse(['error' => 'Invalid date of birth'], Response::HTTP_BAD_REQUEST);
-            } else if ($key == 'email' && $value != null && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                return new JsonResponse(['error' => 'Invalid email'], Response::HTTP_BAD_REQUEST);
             }
             if (array_key_exists($key, $fieldSetterMap) && $value != null) {
                 $setter = $fieldSetterMap[$key];
@@ -196,7 +206,7 @@ class StudentServiceImpl implements IStudentService
         return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
     }
 
-    public function enrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    private function studentEnrollOrUnenrollClassHelper(ManagerRegistry $doctrine, int $studentId, int $classId, string $action): JsonResponse
     {
         $entityManager = $doctrine->getManager();
         $student = $entityManager->getRepository(Student::class)->find($studentId);
@@ -207,37 +217,34 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
         }
 
-        if ($student->getClassList()->contains($classRoom)) {
-            return new JsonResponse(['error' => 'Student already enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
+        if ($action == 'enroll') {
+            if ($student->getClassList()->contains($classRoom)) {
+                return new JsonResponse(['error' => 'The student already enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
+            }
+
+            $student = $student->addClassList($classRoom);
+        } else {
+            if (!$student->getClassList()->contains($classRoom)) {
+                return new JsonResponse(['error' => 'The student not enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
+            }
+
+            $student = $student->removeClassList($classRoom);
         }
 
-        $student->addClassList($classRoom);
         $entityManager->persist($student);
         $entityManager->flush();
 
         return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
     }
 
+    public function enrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
+    {
+        return $this->studentEnrollOrUnenrollClassHelper($doctrine, $studentId, $classId, 'enroll');
+    }
+
     public function unenrollStudent(ManagerRegistry $doctrine, int $studentId, int $classId): JsonResponse
     {
-        $entityManager = $doctrine->getManager();
-        $student = $entityManager->getRepository(Student::class)->find($studentId);
-        $classRoom = $entityManager->getRepository(ClassRoom::class)->find($classId);
-
-        if (!$student || !$classRoom) {
-            $errorMessage = (!$student) ? 'No student found for id: ' . $studentId : 'No class found for id: ' . $classId;
-            return new JsonResponse(['error' => $errorMessage], Response::HTTP_NOT_FOUND);
-        }
-
-        if (!$student->getClassList()->contains($classRoom)) {
-            return new JsonResponse(['error' => 'Student not enrolled in ' . $classRoom->getClassName()], Response::HTTP_BAD_REQUEST);
-        }
-
-        $student->removeClassList($classRoom);
-        $entityManager->persist($student);
-        $entityManager->flush();
-
-        return new JsonResponse($student->toArrayForStudent(), Response::HTTP_OK);
+        return $this->studentEnrollOrUnenrollClassHelper($doctrine, $studentId, $classId, 'unenroll');
     }
 
     public function deleteStudent(ManagerRegistry $doctrine, int $id): JsonResponse
@@ -249,10 +256,12 @@ class StudentServiceImpl implements IStudentService
             return new JsonResponse(['error' => 'No student found for id: ' . $id], Response::HTTP_NOT_FOUND);
         }
 
+        $student_name = $student->getFirstName() . ' ' . $student->getLastName();
+
         $entityManager->remove($student);
         $entityManager->flush();
 
-        return new JsonResponse(['status' => 'Student with id ' . $id . 'has been deleted'], Response::HTTP_NO_CONTENT);
+        return new JsonResponse(['status' => 'Student ' . $student_name . ' has been deleted'], Response::HTTP_NO_CONTENT);
     }
 
     //Search operations for student
@@ -260,44 +269,20 @@ class StudentServiceImpl implements IStudentService
     {
         $perPage = $request->query->getInt('limit') ?? 10;
         $page = $request->query->getInt('page') ?? 1;
-        $offset = ($page - 1) * $perPage;
 
         $request->query->remove('limit');
         $request->query->remove('page');
 
         $criteria = $request->query->all();
 
-        $entityManager = $doctrine->getManager();
-        $studentRepository = $entityManager->getRepository(Student::class);
-        $qb = $studentRepository->findStudentByFields($criteria);
+        $studentRepository = $doctrine->getRepository(Student::class);
+        $query = $studentRepository->findStudentByFields($criteria);
 
-        $paginator = new Paginator($qb, fetchJoinCollection: false);
-        $studentList = $paginator->getQuery()
-            ->setHint(Paginator::HINT_ENABLE_DISTINCT, false)
-            ->setFirstResult($offset)
-            ->setMaxResults($perPage)
-            ->getResult();
-        $totalItems = $paginator->count();
-        $totalPages = (int)ceil($totalItems / $perPage);
+        $data = $this->paginationHelper($query, $perPage, $page);
 
-        if (!$studentList) {
+        if (empty($data['students'])) {
             return new JsonResponse(['error' => 'No student found'], Response::HTTP_NOT_FOUND);
         }
-
-        $students = [];
-        //Convert the list of student objects to an array of associative arrays
-        foreach ($studentList as $student) {
-            $students[] = $student->toArrayForStudent();
-        }
-
-        $data = [
-            'students' => $students,
-            'pagination' => [
-                'current_page' => $page,
-                'total_students' => $totalItems,
-                'total_pages' => $totalPages,
-            ]
-        ];
 
         return new JsonResponse($data, Response::HTTP_OK);
     }

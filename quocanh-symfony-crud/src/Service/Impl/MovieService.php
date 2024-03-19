@@ -41,7 +41,9 @@ class MovieService implements IMovieService
 
         $movieId = $this->extractMovieId($url['url']);
 
-        $response = $this->client->request('GET', 'https://imdb-api.tienich.workers.dev/title/' . $movieId);
+        $thirdPartyAPI = 'https://imdb-api.tienich.workers.dev/title/' . $movieId;
+
+        $response = $this->client->request('GET', $thirdPartyAPI);
         try {
             $content = $response->toArray();
 
