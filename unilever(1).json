@@ -1,0 +1,238 @@
+[
+  {
+    "id": 1,
+    "name": "Vệ sinh nhà cửa",
+    "children": [
+      {
+        "id": 6,
+        "name": "Vệ sinh nhà bếp",
+        "children": [
+          {
+            "id": 20,
+            "name": "Nước rửa chén"
+          },
+          {
+            "id": 21,
+            "name": "Tẩy lau nhà bếp"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "name": "Vệ sinh nhà tắm",
+        "children": [
+          {
+            "id": 22,
+            "name": "Tẩy bồn cầu, nhà tắm"
+          },
+          {
+            "id": 23,
+            "name": "Viên treo bồn cầu"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "name": "Vệ sinh quần áo",
+        "children": [
+          {
+            "id": 24,
+            "name": "Nước xả vải"
+          },
+          {
+            "id": 25,
+            "name": "Nước giặt"
+          },
+          {
+            "id": 26,
+            "name": "Viên giặt"
+          },
+          {
+            "id": 27,
+            "name": "Bột giặt"
+          }
+        ]
+      },
+      {
+        "id": 9,
+        "name": "Vệ sinh chung",
+        "children": [
+          {
+            "id": 28,
+            "name": "Nước lau nhà"
+          },
+          {
+            "id": 29,
+            "name": "Nước lau kính"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Chăm sóc tóc",
+    "children": [
+      {
+        "id": 10,
+        "name": "Dầu gội",
+        "children": [
+          {
+            "id": 30,
+            "name": "Clear"
+          },
+          {
+            "id": 31,
+            "name": "Sunsilk"
+          },
+          {
+            "id": 32,
+            "name": "Dove"
+          },
+          {
+            "id": 33,
+            "name": "Lifebuoy"
+          },
+          {
+            "id": 34,
+            "name": "Tresemmé"
+          }
+        ]
+      },
+      {
+        "id": 11,
+        "name": "Dầu xả",
+        "children": [
+          {
+            "id": 35,
+            "name": "Sunsilk"
+          },
+          {
+            "id": 36,
+            "name": "Dove"
+          },
+          {
+            "id": 37,
+            "name": "Tresemmé"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Chăm sóc răng miệng",
+    "children": [
+      {
+        "id": 12,
+        "name": "Closeup"
+      },
+      {
+        "id": 13,
+        "name": "P/S"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Chăm sóc cơ thể",
+    "children": [
+      {
+        "id": 14,
+        "name": "Sữa tắm",
+        "children": [
+          {
+            "id": 38,
+            "name": "Hazeline"
+          },
+          {
+            "id": 39,
+            "name": "Lifebuoy"
+          },
+          {
+            "id": 40,
+            "name": "Dove"
+          },
+          {
+            "id": 41,
+            "name": "Lux"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "name": "Sữa dưỡng thể",
+        "children": [
+          {
+            "id": 42,
+            "name": "Hazeline"
+          },
+          {
+            "id": 43,
+            "name": "Vaseline"
+          }
+        ]
+      },
+      {
+        "id": 16,
+        "name": "Xà bông cục",
+        "children": [
+          {
+            "id": 44,
+            "name": "Lifebuoy"
+          }
+        ]
+      },
+      {
+        "id": 17,
+        "name": "Lăn xịt khử mùi",
+        "children": [
+          {
+            "id": 45,
+            "name": "Dove"
+          },
+          {
+            "id": 46,
+            "name": "Rexona"
+          },
+          {
+            "id": 47,
+            "name": "Axe"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Gia vị, trà",
+    "children": [
+      {
+        "id": 18,
+        "name": "Lipton"
+      },
+      {
+        "id": 19,
+        "name": "Knorr",
+        "children": [
+          {
+            "id": 48,
+            "name": "Hạt nêm Knorr"
+          },
+          {
+            "id": 49,
+            "name": "Nước mắm Knorr"
+          },
+          {
+            "id": 50,
+            "name": "Gia vị nêm sẵn Knorr"
+          },
+          {
+            "id": 51,
+            "name": "Tương ớt, cà, đen Knorr"
+          }
+        ]
+      }
+    ]
+  }
+]
